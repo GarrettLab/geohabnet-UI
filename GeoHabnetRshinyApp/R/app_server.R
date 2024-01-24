@@ -8,6 +8,7 @@ app_server <- function(input, output, session) {
   # Your application server logic
   param_file_default <- geohabnet::get_parameters()
   param_file_default <- read_yaml(param_file_default)
+  #write_yaml(param_file_default,"data/default_param.yml")
   #First Paramater
   param_1 <- list(
     name=names(param_file_default$default$`CCRI parameters`[1]),
@@ -26,7 +27,7 @@ app_server <- function(input, output, session) {
       )
       )
   )
-  write_yaml(param_file_default,"data/default_param.yml")
+
 
   #Extracting CCRI parameters and their options
 
@@ -132,8 +133,9 @@ app_server <- function(input, output, session) {
   })
   observeEvent(input$inp_submit_all,{
     sendSweetAlert(session = session,title = "Inputs submitted. Updating Parameters",type = "success")
+    geohabnet::reset_params()
     param_file <- geohabnet::get_parameters()
-    def_yaml <- read_yaml("data/default_param.yml")
+    def_yaml <- read_yaml(param_file)
     #HOSTS
     inp <- input$inp_mofreda
     def_yaml$default$`CCRI parameters`$Hosts$monfreda <- inp
