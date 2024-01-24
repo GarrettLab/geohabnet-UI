@@ -1,4 +1,4 @@
-Package: GeoHabnetRshiny
+Package: GeoHabnetRshinyApp
 Title: Cropland Connectivity Dashboard
 Version: 0.0.0.9000
 Authors@R: person('Stavan', 'Shah', email = 'stavannikhi.shah@ufl.edu', role = c('cre', 'aut'))
