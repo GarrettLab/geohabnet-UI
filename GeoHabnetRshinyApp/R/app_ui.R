@@ -11,31 +11,31 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
-      dashboardPage(
-        dashboardHeader(title="Cropland Connectivity"),
-        dashboardSidebar(
-          sidebarMenu(
-            menuItem("Dashboard", tabName = "sm_1_dashboard", icon = icon("dashboard")),
-            menuItem("Customize Input", icon = icon("th"), tabName = "sm_2_custinp",
+      shinydashboard::dashboardPage(
+        shinydashboard::dashboardHeader(title="Cropland Connectivity"),
+        shinydashboard::dashboardSidebar(
+          shinydashboard::sidebarMenu(
+            shinydashboard::menuItem("Dashboard", tabName = "sm_1_dashboard", icon = icon("dashboard")),
+            shinydashboard::menuItem("Customize Input", icon = icon("th"), tabName = "sm_2_custinp",
                      badgeColor = "green"), #badgeLabel = "new",
-            menuItem("Generate Output", icon = icon("th"), tabName = "sm_3_genop",
+            shinydashboard::menuItem("Generate Output", icon = icon("th"), tabName = "sm_3_genop",
                      badgeColor = "blue") #badgeLabel = "new",
           )
         ),
-        dashboardBody(
+        shinydashboard::dashboardBody(
           # titlePanel(title = tags$h2(
           #   tags$b("Title for the Basic Dashboard"),
           #   tags$style(HTML("h2 { text-align: center; }"))
           # )),
-          tabItems(
-            tabItem(tabName = "sm_1_dashboard",
+          shinydashboard::tabItems(
+            shinydashboard::tabItem(tabName = "sm_1_dashboard",
                     uiOutput("uio_sm_1_dashboard")
             ),
-            tabItem(tabName = "sm_2_custinp",
+            shinydashboard::tabItem(tabName = "sm_2_custinp",
                     uiOutput("uio_sm_2_custinp")
                     #h2("Widgets tab content 2")
             ),
-            tabItem(tabName = "sm_3_genop",
+            shinydashboard::tabItem(tabName = "sm_3_genop",
                     uiOutput("uio_sm_genop")
             )
           )

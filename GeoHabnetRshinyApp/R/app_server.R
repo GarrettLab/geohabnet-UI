@@ -4,10 +4,14 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @noRd
+
+library(yaml)
 app_server <- function(input, output, session) {
+
+  #UI###################
   # Your application server logic
   param_file_default <- geohabnet::get_parameters()
-  param_file_default <- read_yaml(param_file_default)
+  param_file_default <- yaml::read_yaml(param_file_default)
   #write_yaml(param_file_default,"data/default_param.yml")
   #First Paramater
   param_1 <- list(
@@ -47,43 +51,40 @@ app_server <- function(input, output, session) {
   output$uio_inputs <- renderUI({
     fluidPage(
       #row 1
+      shinydashboard::box(width = 12,collapsible = T,collapsed = T,
       column(3,
              selectInput("inp_mofreda",param_1$options[[1]]$option,choices = param_1$options[[1]]$choices),
              selectInput("inp_mapspam",param_1$options[[2]]$option,choices = param_1$options[[2]]$choices),
              fileInput("inp_host_file","File")
-             #checkboxGroupInput("inp_mofreda","Monfreda",choices = c("avocado")),
-             #checkboxGroupInput("inp_mapspam","Mapspam",choices = c("avocado","banana"))#,
-             #selectInput("inp_hosts_selinp","Hosts",c(1,2))
-      ),
-      column(3,style="height:23rem;overflow-y:scroll;",
+            ),
+      column(3,style="height:23rem;overflow-y:auto;",
              div(
                h5("Density Threshold",style="font-weight: bold;margin-right: 1rem;"),
-               actionButton("inp_add_dt","Add threshold"),
+               actionButton("inp_add_dt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
+               actionButton("inp_remove_dt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
                style="display:inline-flex;"
              ),
              uiOutput("uio_add_dt")
       ),
-      column(3,style="height:23rem;overflow-y:scroll;",
+      column(3,style="height:23rem;overflow-y:auto;",
              div(
                h5("Link Threshold",style="font-weight: bold;margin-right: 1rem;"),
-               actionButton("inp_add_lt","Add threshold"),
+               actionButton("inp_add_lt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
+               actionButton("inp_remove_lt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
                style="display:inline-flex;"
              ),
              uiOutput("uio_add_lt")
       ),
       column(2,
              checkboxGroupInput("inp_agg_strat","Aggregation Strategy",choices = c("sum","mean")),
-      # ),
-      # #row 2
-      # column(3,
-             checkboxGroupInput("inp_distance_strat","Distance Strategy",choices = geohabnet::dist_methods())
+             checkboxGroupInput("inp_distance_strat","Distance Strategy",choices = geohabnet::dist_methods()),
+             numericInput("inp_resolution","Resolution",value=12),
       ),
       column(1,
-             numericInput("inp_resolution","Resolution",value=12),
-      # ),
-      # column(2,
-             h5("Geo Extnet",style="font-weight: bold"),
-             checkboxInput("inp_globalextent",label = "Global",value = TRUE)
+             h5("Geo Extnet",style="font-weight: bold;margin-top: -1px;"),
+             checkboxInput("inp_globalextent",label = "Global",value = TRUE),
+             uiOutput("uio_globalextent_user")
+      )
       ),
       column(12,
              h5("Network Metrics",style="font-weight: bold"),
@@ -108,7 +109,7 @@ app_server <- function(input, output, session) {
   })
   fcn_add_numeric_input <- function(id,cnt,value){
     input_list <- lapply(1:cnt,function(i){
-      inp_id <- paste0("id",i)
+      inp_id <- paste0(id,i)
       numericInput(inp_id,label = NULL,value = value)
     })
   }
@@ -117,8 +118,16 @@ app_server <- function(input, output, session) {
     req(input$inp_add_dt)
     isolate(global_btn_cnt$cnt_dt <- global_btn_cnt$cnt_dt + 1)
   })
+  observeEvent(input$inp_remove_dt,{
+    req(input$inp_remove_dt)
+    isolate(global_btn_cnt$cnt_dt <- global_btn_cnt$cnt_dt - 1)
+  })
   output$uio_add_dt <- renderUI({
+    if(global_btn_cnt$cnt_dt==0){
+      global_btn_cnt$cnt_dt <- 1
+    }
     cnt <- global_btn_cnt$cnt_dt
+    if(cnt)
     input_list <- fcn_add_numeric_input("inp_density_threshold_",cnt,0.00015)
     do.call(tagList,input_list)
   })
@@ -126,16 +135,36 @@ app_server <- function(input, output, session) {
     req(input$inp_add_lt)
     isolate(global_btn_cnt$cnt_lt <- global_btn_cnt$cnt_lt + 1)
   })
+  observeEvent(input$inp_remove_lt,{
+    req(input$inp_remove_lt)
+    isolate(global_btn_cnt$cnt_lt <- global_btn_cnt$cnt_lt - 1)
+  })
   output$uio_add_lt <- renderUI({
+    if(global_btn_cnt$cnt_lt==0){
+      global_btn_cnt$cnt_lt <- 1
+    }
     cnt <- global_btn_cnt$cnt_lt
     input_list <- fcn_add_numeric_input("inp_link_threshold_",cnt,0.000001)
     do.call(tagList,input_list)
+  })
+  output$uio_globalextent_user <- renderUI({
+    if(input$inp_globalextent==T){
+      div()
+    }else{
+      default_global <- geohabnet::geoscale_param()
+      div(
+        numericInput("inp_geoscale_1",NULL,default_global[1]),
+        numericInput("inp_geoscale_2",NULL,default_global[2]),
+        numericInput("inp_geoscale_3",NULL,default_global[3]),
+        numericInput("inp_geoscale_4",NULL,default_global[4])
+      )
+    }
   })
   observeEvent(input$inp_submit_all,{
     sendSweetAlert(session = session,title = "Inputs submitted. Updating Parameters",type = "success")
     geohabnet::reset_params()
     param_file <- geohabnet::get_parameters()
-    def_yaml <- read_yaml(param_file)
+    def_yaml <- yaml::read_yaml(param_file)
     #HOSTS
     inp <- input$inp_mofreda
     def_yaml$default$`CCRI parameters`$Hosts$monfreda <- inp
@@ -172,7 +201,7 @@ app_server <- function(input, output, session) {
     #Network Metrics Negative Exponential
     def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$weights <- c(input$inp_netmet_ne_bet,input$inp_netmet_ne_ns,input$inp_netmet_ne_nn,input$inp_netmet_ne_evc)
 
-    write_yaml(def_yaml,param_file)
+    yaml::write_yaml(def_yaml,param_file)
     set_parameters(param_file)
     Sys.sleep(5)
     sendSweetAlert(session = session,title = "Parameters Set. Generating Outputs",type = "success")
