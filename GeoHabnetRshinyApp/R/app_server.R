@@ -53,8 +53,8 @@ app_server <- function(input, output, session) {
       #row 1
       shinydashboard::box(width = 12,collapsible = T,collapsed = T,
       column(3,
-             selectInput("inp_mofreda",param_1$options[[1]]$option,choices = param_1$options[[1]]$choices),
-             selectInput("inp_mapspam",param_1$options[[2]]$option,choices = param_1$options[[2]]$choices),
+             selectInput("inp_mofreda",param_1$options[[1]]$option,choices = c("None",param_1$options[[1]]$choices),multiple = T),
+             selectInput("inp_mapspam",param_1$options[[2]]$option,choices = c("None",param_1$options[[2]]$choices),multiple = T),
              fileInput("inp_host_file","File")
             ),
       column(3,style="height:23rem;overflow-y:auto;",
@@ -151,12 +151,12 @@ app_server <- function(input, output, session) {
     if(input$inp_globalextent==T){
       div()
     }else{
-      default_global <- geohabnet::geoscale_param()
+      default_global <- geohabnet::geoscale_param() #
       div(
-        numericInput("inp_geoscale_1",NULL,default_global[1]),
-        numericInput("inp_geoscale_2",NULL,default_global[2]),
-        numericInput("inp_geoscale_3",NULL,default_global[3]),
-        numericInput("inp_geoscale_4",NULL,default_global[4])
+        numericInput("inp_geoscale_1","X min",default_global[1]),
+        numericInput("inp_geoscale_2","X Max",default_global[2]),
+        numericInput("inp_geoscale_3","Y Min",default_global[3]),
+        numericInput("inp_geoscale_4","Y Max",default_global[4])
       )
     }
   })
