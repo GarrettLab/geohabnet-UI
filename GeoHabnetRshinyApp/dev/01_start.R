@@ -71,6 +71,7 @@ usethis::use_package("png")
 usethis::use_package("raster")
 usethis::use_package("terra")
 usethis::use_package("plotly")
+usethis::use_package("shinydashboard")
 
 # You're now set! ----
 

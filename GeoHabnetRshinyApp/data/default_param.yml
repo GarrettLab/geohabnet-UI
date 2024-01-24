@@ -1,0 +1,59 @@
+default:
+  CCRI parameters:
+    Hosts:
+      monfreda: avocado
+      mapspam2010: ~
+      mapspam2017Africa: ~
+      file: ~
+    HostDensityThreshold:
+    - 0.00015
+    - 2.5e-05
+    AggregationStrategy:
+    - sum
+    - mean
+    DistanceStrategy: geodesic
+    Resolution: 12
+    GeoExtent:
+      global: yes
+      customExt:
+      - -115
+      - -75
+      - 5
+      - 32
+    LinkThreshold: 1.0e-06
+    DispersalKernelModels:
+      InversePowerLaw:
+        beta:
+        - 0.5
+        - 1
+        - 1.5
+      NegativeExponential:
+        gamma:
+        - 0.05
+        - 1
+        - 0.2
+        - 0.3
+    NetworkMetrics:
+      InversePowerLaw:
+        metrics:
+        - NODE_STRENGTH
+        - Sum_of_nearest_neighbors
+        - eigenVector_centrAlitY
+        weights:
+        - 30
+        - 30
+        - 40
+      NegativeExponential:
+        metrics:
+        - NODE_STRENGTH
+        - Sum_of_nearest_neighbors
+        - eigenVector_centrAlitY
+        weights:
+        - 30
+        - 30
+        - 40
+    PriorityMaps:
+      OutDir: ~
+      MeanCC: yes
+      Difference: yes
+      Variance: yes
