@@ -12,8 +12,8 @@ Imports:
     png,
     raster,
     shiny (>= 1.7.1),
-    shinyBS,
     shinydashboard,
+    shinyFiles,
     shinyWidgets,
     terra,
     yaml
@@ -23,3 +23,5 @@ RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Depends: 
+    shinyBS

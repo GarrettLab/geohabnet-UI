@@ -60,7 +60,7 @@ golem_add_external_resources <- function() {
 
   tags$head(
     favicon(),
-    #golem::activate_js(),
+    golem::activate_js(),
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "GeoHabnetRshiny"
