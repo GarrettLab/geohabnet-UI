@@ -70,6 +70,7 @@ usethis::use_package("shinyWidgets")
 usethis::use_package("png")
 usethis::use_package("raster")
 usethis::use_package("terra")
+usethis::use_package("ggplot2")
 usethis::use_package("plotly")
 usethis::use_package("shinydashboard")
 #usethis::use_package("shinyBS")
@@ -77,7 +78,8 @@ usethis::use_package("shinyBS", "depends")
 usethis::use_package("bslib")
 usethis::use_package("bsicons")
 usethis::use_package("shinyFiles")
-
+usethis::use_package("shinybusy")
+#
 # You're now set! ----
 
 # go to dev/02_dev.R
