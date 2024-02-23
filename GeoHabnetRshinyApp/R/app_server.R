@@ -81,7 +81,7 @@ app_server <- function(input, output, session) {
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Host Considerations",
                           column(3,
                                  selectInput("inp_mofreda",
-                                             label =fcnAddInfo("Monfreda et al. (2008) dataset","This dataset provides global maps of harvested area fraction for over 150 crops."),#shinyBS::tipify(el = div("Mofreda",icon(name = "info-circle", lib = "font-awesome")), title = ),
+                                             label =fcnAddInfo("Monfreda et al. (2008) dataset","This dataset provides global maps of harvested area fraction for over 150 crops. Need to select atleast one host"),#shinyBS::tipify(el = div("Mofreda",icon(name = "info-circle", lib = "font-awesome")), title = ),
                                              choices = c(param_hosts$options[[1]]$choices),
                                              multiple = T)
                                  ),
@@ -96,7 +96,7 @@ app_server <- function(input, output, session) {
                                  ),
                           column(3,style="height:14rem;overflow-y:auto;",
                                  div(
-                                   h5("Host Density Threshold",style="font-weight: bold;margin-right: 1rem;"),
+                                   h5(fcnAddInfo("Host Density Threshold","Selections have to unique and positive"),style="font-weight: bold;margin-right: 1rem;"),
                                    actionButton("inp_add_dt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
                                    actionButton("inp_remove_dt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
                                    style="display:inline-flex;"
@@ -108,13 +108,13 @@ app_server <- function(input, output, session) {
       #Gegraphic##################
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Geographic Considerations",
                           column(4,
-                                 checkboxGroupInput("inp_agg_strat","Aggregation Strategy",choices = c("sum","mean"))
+                                 checkboxGroupInput("inp_agg_strat",fcnAddInfo("Aggregation Strategy","Select atleast one option"),choices = c("sum","mean"))
                                  ),
                           column(4,
-                                 checkboxGroupInput("inp_distance_strat","Distance Strategy",choices = geohabnet::dist_methods())
+                                 shiny::radioButtons("inp_distance_strat",fcnAddInfo("Distance Strategy",""),choices = geohabnet::dist_methods())
                                  ),
                           column(2,
-                                 numericInput("inp_resolution","Spatial Resolution",value=12),
+                                 numericInput("inp_resolution",fcnAddInfo("Spatial Resolution","Values should be between 1 and 48"),value=12),
                           ),
                           column(2,
                                  shinyBS::tipify(el = div(h5("Geographic Extent",style="font-weight: bold;margin-top: -1px;"),icon(name = "info-circle", lib = "font-awesome"),style="display:inline-flex;"), title = paste0(geohabnet::geoscale_param(),collapse = ";")),
@@ -126,7 +126,7 @@ app_server <- function(input, output, session) {
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Network Metrics and Dispersal Kernels",
              column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
                     column(3,
-                           h5("Inverse Power Law Model",style="font-weight: bold"),
+                           h5(fcnAddInfo("Inverse Power Law Model","Select atleast one method. Sum of method(s) should be 100"),style="font-weight: bold"),
                            selectInput(inputId = "inp_ipl_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$InversePowerLaw$metrics),multiple = T)
                     ),
                     column(9,
@@ -135,7 +135,7 @@ app_server <- function(input, output, session) {
                     ),
              column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
                     column(3,
-                           h5("Negative Exponential Model",style="font-weight: bold"),
+                           h5(fcnAddInfo("Negative Exponential Model","Select atleast one method. Sum of method(s) should be 100"),style="font-weight: bold"),
                            selectInput(inputId = "inp_ne_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$NegativeExponential$metrics),multiple = T)
                     ),
                     column(9,
@@ -144,7 +144,7 @@ app_server <- function(input, output, session) {
                     ),
              column(4,style="height:14rem;overflow-y:auto;",
                     div(
-                      h5("Link Weight Threshold",style="font-weight: bold;margin-right: 1rem;"),
+                      h5(fcnAddInfo("Link Weight Threshold","Inputs should be numeric, unique and positive."),style="font-weight: bold;margin-right: 1rem;"),
                       actionButton("inp_add_lt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
                       actionButton("inp_remove_lt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
                       style="display:inline-flex;"
@@ -375,6 +375,10 @@ app_server <- function(input, output, session) {
   #Submit button###################
   observeEvent(input$inp_submit_all,{
     #sendSweetAlert(session = session,title = "Inputs submitted. Updating Parameters",type = "success")
+    if("degree" %in% input$inp_ipl_dd || "degree" %in% input$inp_ne_dd){
+      shinybusy::notify_info("We are still updating'degree' functionality. Please remove it from selection",position = "center-bottom",timeout = 6000)#,config_notify(width='100rem')
+      return()
+    }
     geohabnet::reset_params()
     param_file <- geohabnet::get_parameters()
     def_yaml <- yaml::read_yaml(param_file)
@@ -522,10 +526,12 @@ app_server <- function(input, output, session) {
     }
 
     #Output
-    if(fcnValidate(input$inp_prioritymaps_2) && fcnValidate(input$inp_prioritymaps_3) && fcnValidate(input$inp_prioritymaps_4)){
-      val_list$Issue <- c(val_list$Issue,list("Output Selection"="Incorrect Selection"))
+    # if(fcnValidate(input$inp_prioritymaps_2) && fcnValidate(input$inp_prioritymaps_3) && fcnValidate(input$inp_prioritymaps_4)){
+    #   val_list$Issue <- c(val_list$Issue,list("Output Selection"="Incorrect Selection"))
+    # }
+    if(fcnValidate(input$inp_prioritymaps_2)){
+      val_list$Issue <- c(val_list$Issue,list("Output Selection"="Please select Mean Map"))
     }
-
     def_yaml$default$`CCRI parameters`$PriorityMaps$MeanCC <- input$inp_prioritymaps_2
     def_yaml$default$`CCRI parameters`$PriorityMaps$Difference <- input$inp_prioritymaps_3
     def_yaml$default$`CCRI parameters`$PriorityMaps$Variance <- input$inp_prioritymaps_4
@@ -577,7 +583,7 @@ app_server <- function(input, output, session) {
   })
   output$uiomean <-renderUI({
     if(isolate(rv$mean)==T){
-      shinydashboard::box(width=12,h3("Mean Map"),
+      shinydashboard::box(width=6,h3("Mean Map"),
                           shiny::downloadButton('dwnmean',"Download"),
                           shiny::plotOutput("plotoutmean"))
     }else{
@@ -586,7 +592,7 @@ app_server <- function(input, output, session) {
   })
   output$uiodiff <-renderUI({
     if(isolate(rv$diff)==T){
-      shinydashboard::box(width=12,h3("Difference Map"),
+      shinydashboard::box(width=6,h3("Difference Map"),
                           shiny::downloadButton('dwndiff',"Download"),
                           shiny::plotOutput("plotoutdiff"))
     }else{
@@ -595,7 +601,7 @@ app_server <- function(input, output, session) {
   })
   output$uiovar <-renderUI({
     if(isolate(rv$var)==T){
-      shinydashboard::box(width=12,h3("Variance Map"),
+      shinydashboard::box(width=6,h3("Variance Map"),
                           shiny::downloadButton('dwnvar',"Download"),
                           shiny::plotOutput("plotoutvar"))
     }else{
@@ -644,9 +650,21 @@ app_server <- function(input, output, session) {
     rv$plotvar<-geohabnet:::.plotmap(rv$mainop@var_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
   })
   output$dwnmean <- downloadHandler(
-    filename = function() { paste("mean_map", '.png', sep='') },
+    filename = function() { paste("mean_map", '.tif', sep='') },
     content = function(file) {
-      ggplot2::ggsave(file, plot = rv$plotmean, device = "png")
+      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "mean"))),file)
+    }
+  )
+  output$dwndiff <- downloadHandler(
+    filename = function() { paste("mean_map", '.tif', sep='') },
+    content = function(file) {
+      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "diff"))),file)
+    }
+  )
+  output$dwnvar <- downloadHandler(
+    filename = function() { paste("mean_map", '.tif', sep='') },
+    content = function(file) {
+      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "var"))),file)
     }
   )
 }
