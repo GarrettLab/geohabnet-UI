@@ -143,7 +143,7 @@ app_server <- function(input, output, session) {
                               h4("Global Perspective: Leverage insights from Xing et al. (2020) to understand global cropland connectivity trends, all within the convenience of this dashboard")
                               ),
           shinydashboard::box(width =4,style="text-align: center;",
-                              img(src = "www/snap.png",width=80),
+                              img(src = "www/snap.png",width=60),
                               h4("User-Friendly Interface: Inspired by Configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis process.")
                               ),
           shinydashboard::box(width = 12,style="text-align: center;",
