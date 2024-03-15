@@ -16,7 +16,7 @@ app_ui <- function(request) {
         shinydashboard::dashboardSidebar(
           shinydashboard::sidebarMenu(
             id = "tabs",
-            shinydashboard::menuItem("Home", tabName = "sm_1_dashboard", icon = icon("dashboard")),
+            shinydashboard::menuItem("Home", tabName = "sm_1_dashboard", icon = icon("home")),
             shinydashboard::menuItem("Customize Input", icon = icon("th"), tabName = "sm_2_custinp",
                      badgeColor = "green"), #badgeLabel = "new",
             shinydashboard::menuItem("View Outputs", icon = icon("chart-column"), tabName = "sm_3_genop",
