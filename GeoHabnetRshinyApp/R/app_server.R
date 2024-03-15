@@ -146,16 +146,19 @@ app_server <- function(input, output, session) {
                               img(src = "www/snap.png",width=80),
                               h4("User-Friendly Interface: Inspired by Configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis process.")
                               ),
-          shinydashboard::box(width = 12,
-                              column(7,
-                                     h4("Example output",style="text-align: center;"),
-                                     img(src = "www/map.jpg", width = 700)),
-                              column(5,h4("The network and connectivity of cropland can be used to analyse the potential spread of plant pathogen. While network plays a crucial role, there are several other factors that affects the spread and thus the connectivity. Although croplands may be geographically connected, the risk cannot be generalized as pathogen may not spread if it’s exclusive to specific crop. (Keshav et al. 2023) supports up to 10 parameters that has potential to impact risk and connectivity among croplands. The implementation is expanded upon (Xing et al. 2020), which discusses global cropland connectivity. This framework uses default values from the paper at the same time making them as parameters and eventually turning it into framework for the analysis of crops.
+          shinydashboard::box(width = 12,style="text-align: center;",
+                              h3("Example output",style="text-align: center;"),
+                              img(src = "www/map.jpg", width = 700)
+          ),
+          shinydashboard::box(width = 12,style="text-align: center;",
+                              h3("Abstract"),
+                              h4("The network and connectivity of cropland can be used to analyse the potential spread of plant pathogen. While network plays a crucial role, there are several other factors that affects the spread and thus the connectivity. Although croplands may be geographically connected, the risk cannot be generalized as pathogen may not spread if it’s exclusive to specific crop. (Keshav et al. 2023) supports up to 10 parameters that has potential to impact risk and connectivity among croplands. The implementation is expanded upon (Xing et al. 2020), which discusses global cropland connectivity. This framework uses default values from the paper at the same time making them as parameters and eventually turning it into framework for the analysis of crops.
 
 Although this article is focused on usage, it is useful to know for interested developers that package design is inspired from widely used Configuration-based design in software development (Majors 2022), (Nash and DeMore 2009), and (Allaire 2023) provides a text based interface to control the parameters values for risk analysis in this context.
 
-Primary objective of this vignette is to help user in getting started, list capabilities and intuition behind them. It also describes underlying implementation at high level to support the intuition behind functions. Throughout the article, we will citing external sites and resources which is relevant to usage of this package."))
-                              )
+Primary objective of this vignette is to help user in getting started, list capabilities and intuition behind them. It also describes underlying implementation at high level to support the intuition behind functions. Throughout the article, we will citing external sites and resources which is relevant to usage of this package.")
+          )
+
         )
   })
 
