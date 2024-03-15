@@ -12,14 +12,14 @@ app_ui <- function(request) {
     # Your application UI logic
     fluidPage(
       shinydashboard::dashboardPage(
-        shinydashboard::dashboardHeader(title="Cropland Connectivity"),
+        shinydashboard::dashboardHeader(title="geohabnet Dashboard"),
         shinydashboard::dashboardSidebar(
           shinydashboard::sidebarMenu(
             id = "tabs",
-            # shinydashboard::menuItem("Dashboard", tabName = "sm_1_dashboard", icon = icon("dashboard")),
+            shinydashboard::menuItem("Home", tabName = "sm_1_dashboard", icon = icon("dashboard")),
             shinydashboard::menuItem("Customize Input", icon = icon("th"), tabName = "sm_2_custinp",
                      badgeColor = "green"), #badgeLabel = "new",
-            shinydashboard::menuItem("Generate Output", icon = icon("chart-column"), tabName = "sm_3_genop",
+            shinydashboard::menuItem("View Outputs", icon = icon("chart-column"), tabName = "sm_3_genop",
                      badgeColor = "blue") #badgeLabel = "new",
           )
         ),
@@ -29,9 +29,9 @@ app_ui <- function(request) {
           #   tags$style(HTML("h2 { text-align: center; }"))
           # )),
           shinydashboard::tabItems(
-            # shinydashboard::tabItem(tabName = "sm_1_dashboard",
-            #         uiOutput("uio_sm_1_dashboard")
-            # ),
+            shinydashboard::tabItem(tabName = "sm_1_dashboard",
+                    uiOutput("uio_sm_1_dashboard")
+            ),
             shinydashboard::tabItem(tabName = "sm_2_custinp",
                     uiOutput("uio_sm_2_custinp")
                     #h2("Widgets tab content 2")
@@ -67,7 +67,7 @@ golem_add_external_resources <- function() {
     shinybusy::use_busy_spinner(spin = "semipolar",position = "full-page"),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "GeoHabnetRshiny"
+      app_title = "geohabnet Dashboard"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

@@ -73,30 +73,119 @@ app_server <- function(input, output, session) {
   fcnAddInfo <- function(label,info){
     return(shinyBS::tipify(el = div(label,icon(name = "info-circle", lib = "font-awesome")), title = info))
   }
+
+  output$uio_sm_1_dashboard <- renderUI({
+    fluidPage(style="background-color:white",
+          tags$head(
+            tags$style(
+              HTML(
+                "
+        body {
+          background-image: url('www/farmland.jpg');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          height: 100vh;
+          margin: 0;
+          padding: 0;
+          font-family: Arial, sans-serif;
+        }
+        .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+            }
+            .text {
+                flex: 1;
+                padding-right: 20px;
+            }
+            .image {
+                flex: 1;
+                position: relative;
+                overflow: hidden;
+            }
+            .image img {
+                width: 100%;
+                height: auto;
+            }
+            .overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(to left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+            }
+        "
+              )
+            )
+          ),
+         fluidRow(
+                              div(class = "container",
+                                  div(class = "text",
+                                      h2("Welcome"),
+                                      p("Welcome to geohabnet Dashboard. Our tool empowers you to analyze the network and connectivity of croplands, crucial for understanding the potential spread of plant pathogens. While geographical connection is significant, numerous other factors influence spread and connectivity, such as crop type and various environmental parameters.")
+                                  ),
+                                  div(class = "image",
+                                      img(src = "www/farmland.jpg", alt = "Your Image"),
+                                      div(class = "overlay")
+                                  )
+                              )
+                              #h4("Welcome to geohabnet Dashboard. Our tool empowers you to analyze the network and connectivity of croplands, crucial for understanding the potential spread of plant pathogens. While geographical connection is significant, numerous other factors influence spread and connectivity, such as crop type and various environmental parameters.")
+                              ),
+          shinydashboard::box(width =4,style="text-align: center;",
+                              img(src = "www/customize.png",width=80),
+                              h4("Customizable Parameters: Adjust up to 10 parameters identified by Keshav et al. (2023) to tailor your analysis within the RShiny environment.")
+                              ),
+          shinydashboard::box(width =4,style="text-align: center;",
+                              img(src = "www/international.png",width=80),
+                              h4("Global Perspective: Leverage insights from Xing et al. (2020) to understand global cropland connectivity trends, all within the convenience of this dashboard")
+                              ),
+          shinydashboard::box(width =4,style="text-align: center;",
+                              img(src = "www/snap.png",width=80),
+                              h4("User-Friendly Interface: Inspired by Configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis process.")
+                              ),
+          shinydashboard::box(width = 12,
+                              column(7,
+                                     h4("Example output",style="text-align: center;"),
+                                     img(src = "www/map.jpg", width = 700)),
+                              column(5,h4("The network and connectivity of cropland can be used to analyse the potential spread of plant pathogen. While network plays a crucial role, there are several other factors that affects the spread and thus the connectivity. Although croplands may be geographically connected, the risk cannot be generalized as pathogen may not spread if it’s exclusive to specific crop. (Keshav et al. 2023) supports up to 10 parameters that has potential to impact risk and connectivity among croplands. The implementation is expanded upon (Xing et al. 2020), which discusses global cropland connectivity. This framework uses default values from the paper at the same time making them as parameters and eventually turning it into framework for the analysis of crops.
+
+Although this article is focused on usage, it is useful to know for interested developers that package design is inspired from widely used Configuration-based design in software development (Majors 2022), (Nash and DeMore 2009), and (Allaire 2023) provides a text based interface to control the parameters values for risk analysis in this context.
+
+Primary objective of this vignette is to help user in getting started, list capabilities and intuition behind them. It also describes underlying implementation at high level to support the intuition behind functions. Throughout the article, we will citing external sites and resources which is relevant to usage of this package."))
+                              )
+        )
+  })
+
   output$uio_sm_2_custinp <- renderUI({
     #shinyjs::disable("inp_submit_all")
     fluidPage(
 
       #Host Considerations#########
-      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Host Considerations",
+      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Habitat Considerations",
+                          column(12,
+                                 h5("geohabnet can provide analyses of habitat connectivity based on data you provide. It can also evaluate cropland connectivity analyses for crop-specific pathogens and pests based on Monfreda et al. (2008) and MapSPAM data sets. ")
+                                 ),
+                          column(3,style="border-right: 1px solid lightgray;",
+                                 fileInput("inp_host_file","File (if uploading your own file with a map of habitat quality)")
+                          ),
                           column(3,
                                  selectInput("inp_mofreda",
-                                             label =fcnAddInfo("Monfreda et al. (2008) dataset","This dataset provides global maps of harvested area fraction for over 150 crops. Need to select atleast one host"),#shinyBS::tipify(el = div("Mofreda",icon(name = "info-circle", lib = "font-awesome")), title = ),
+                                             label =fcnAddInfo("Monfreda et al. (2008) dataset","This dataset provides global maps of harvested area fraction for over 150 crops. Need to select at least one habitat"),
                                              choices = c(param_hosts$options[[1]]$choices),
                                              multiple = T)
                                  ),
                           column(3,
-                                 radioButtons("inp_mapspam_options",label = "MAPSPAM or IFPRI dataset",choices = c("Global 2010","Africa 2017"),inline = T),
-                                 selectInput("inp_mapspam",label = NULL,choices = c(param_hosts$options[[2]]$choices),multiple = T)#param_hosts$options[[2]]$option
-                                 # shinyBS::bsTooltip("inp_mapspam", "Info", trigger = "hover",
-                                 #                    "right", options = list(container = "body"))
-                                 ),
-                          column(3,
-                                 fileInput("inp_host_file","File")
+                                 radioButtons("inp_mapspam_options",label = fcnAddInfo("MapSPAM or IFPRI dataset","This dataset provides global maps of harvested area fraction for 42 crops. Need to select at least one habitat"),
+                                              choices = c("Global 2010","Africa 2017"),inline = T),
+                                 selectInput("inp_mapspam",label = NULL,
+                                             choices = c(param_hosts$options[[2]]$choices),multiple = T)
                                  ),
                           column(3,style="height:14rem;overflow-y:auto;",
                                  div(
-                                   h5(fcnAddInfo("Host Density Threshold","Selections have to unique and positive"),style="font-weight: bold;margin-right: 1rem;"),
+                                   h5(fcnAddInfo("Habitat Density Threshold","Selections have to be unique and positive"),style="font-weight: bold;margin-right: 1rem;"),
                                    actionButton("inp_add_dt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
                                    actionButton("inp_remove_dt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
                                    style="display:inline-flex;"
@@ -107,41 +196,57 @@ app_server <- function(input, output, session) {
       ),
       #Gegraphic##################
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Geographic Considerations",
-                          column(4,
-                                 checkboxGroupInput("inp_agg_strat",fcnAddInfo("Aggregation Strategy","Select atleast one option"),choices = c("sum","mean"))
-                                 ),
-                          column(4,
-                                 shiny::radioButtons("inp_distance_strat",fcnAddInfo("Distance Strategy",""),choices = geohabnet::dist_methods())
+                          column(12,
+                                 h5("Select the geographic extent for the analysis, the spatial aggregation factor, the aggregation method (if aggregating data), and the method for evaluating the distance between locations")
                                  ),
                           column(2,
-                                 numericInput("inp_resolution",fcnAddInfo("Spatial Resolution","Values should be between 1 and 48"),value=12),
-                          ),
-                          column(2,
-                                 shinyBS::tipify(el = div(h5("Geographic Extent",style="font-weight: bold;margin-top: -1px;"),icon(name = "info-circle", lib = "font-awesome"),style="display:inline-flex;"), title = paste0(geohabnet::geoscale_param(),collapse = ";")),
+                                 fcnAddInfo(h5("Geographic Extent",style="font-weight: bold;margin-top: -1px;"),paste0("Deselect Global to input custom scales. Default Scale: ",paste0(geohabnet::geoscale_param(),collapse = ";"))),
+                                 #shinyBS::tipify(el = div(h5("Geographic Extent",style="font-weight: bold;margin-top: -1px;"),icon(name = "info-circle", lib = "font-awesome"),style="display:inline-flex;"), title = paste0()),
                                  checkboxInput("inp_globalextent",label = "Global",value = TRUE),
                                  uiOutput("uio_globalextent_user")
-                          )
+                          ),
+                          column(2,style="margin-left: 5rem;margin-right:8rem;",
+                                 numericInput("inp_resolution",fcnAddInfo("Spatial Aggregation Factor","Values should be between 1 and 48"),value=12),
+                          ),
+                          column(4,
+                                 checkboxGroupInput("inp_agg_strat",fcnAddInfo("Aggregation Strategy","Select at least one option"),choices = c("sum","mean"))
+                                 ),
+                          column(4,style ="margin-left: -13rem;",
+                                 shiny::radioButtons("inp_distance_strat",fcnAddInfo("Distance Strategy",""),choices = geohabnet::dist_methods())
+                                 ),
+
       ),
       #Network#############
-      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Network Metrics and Dispersal Kernels",
-             column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
-                    column(3,
-                           h5(fcnAddInfo("Inverse Power Law Model","Select atleast one method. Sum of method(s) should be 100"),style="font-weight: bold"),
-                           selectInput(inputId = "inp_ipl_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$InversePowerLaw$metrics),multiple = T)
-                    ),
-                    column(9,
-                           uiOutput("uio_create_ipl_input")
-                    )
-                    ),
-             column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
-                    column(3,
-                           h5(fcnAddInfo("Negative Exponential Model","Select atleast one method. Sum of method(s) should be 100"),style="font-weight: bold"),
-                           selectInput(inputId = "inp_ne_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$NegativeExponential$metrics),multiple = T)
-                    ),
-                    column(9,
-                           uiOutput("uio_create_ne_input")
-                    )
-                    ),
+      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Dispersal Kernels",
+                          column(12,
+                                 column(3,
+                                        h5(fcnAddInfo("Metrics","Select at least one metric Sum of metric(s) should be 100"),style="font-weight: bold"),
+                                        selectInput(inputId = "inp_ipl_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$InversePowerLaw$metrics),multiple = T)
+                                 ),
+                                 column(9,
+                                        uiOutput("uio_create_ipl_input")
+                                 )
+                                 )
+      ),
+      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Network Metrics",
+             # column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
+             #        column(3,
+             #               h5(fcnAddInfo("Inverse Power Law Model","Select at least one metric Sum of metric(s) should be 100"),style="font-weight: bold"),
+             #               selectInput(inputId = "inp_ipl_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$InversePowerLaw$metrics),multiple = T)
+             #        ),
+             #        column(9,
+             #               uiOutput("uio_create_ipl_input")
+             #        )
+             #        ),
+             # column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
+             #        column(3,
+             #               h5(fcnAddInfo("Negative Exponential Model","Select at least one method. Sum of method(s) should be 100"),style="font-weight: bold"),
+             #               selectInput(inputId = "inp_ne_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$NegativeExponential$metrics),multiple = T)
+             #        ),
+             #        column(9,
+             #               uiOutput("uio_create_ne_input")
+             #        )
+             #        ),
              column(4,style="height:14rem;overflow-y:auto;",
                     div(
                       h5(fcnAddInfo("Link Weight Threshold","Inputs should be numeric, unique and positive."),style="font-weight: bold;margin-right: 1rem;"),
@@ -155,7 +260,7 @@ app_server <- function(input, output, session) {
                     h5(
                       fcnAddInfo(
                         "Dispersal Parameter Beta",
-                        "Beta is a parameter used in the dispersal kernel based on the inverse power law model. The larger the beta, the more likely a pathogen or pest move from one location to another."),
+                        "Beta is a parameter used in the dispersal kernel based on the inverse power law model. The smaller the beta, the more likely a pathogen or pest move from one location to another."),
                       style="font-weight: bold"),
                     div(
                       actionButton("inp_add_beta",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
@@ -168,7 +273,7 @@ app_server <- function(input, output, session) {
                     h5(
                       fcnAddInfo(
                         "Dispersal Parameter Gamma",
-                        "Gamma is a parameter used in the dispersal kernel based on the negative exponential model. The larger the gamma, the more likely a pathogen or pest move from one location to another."
+                        "Gamma is a parameter used in the dispersal kernel based on the negative exponential model. The smaller the gamma, the more likely a pathogen or pest move from one location to another."
                         )
                       ,style="font-weight: bold"),
                     div(
@@ -188,27 +293,28 @@ app_server <- function(input, output, session) {
                                 fcnAddInfo(shinyFiles::shinyDirButton("inp_prioritymaps_1",names(param_prioritymaps_default)[1] ,
                                                 title = "Please select a folder:", multiple = FALSE,
                                                 buttonType = "default", class = NULL),
-                                           "Choose the folder where user prefer to save the outputs.")
+                                           "Choose the folder where user prefers to save the outputs.")
                                  #checkboxInput("inp_prioritymaps_1",label = ,value = param_prioritymaps_default[[1]])
                                  ),
                           column(3,
-                                 checkboxInput("inp_prioritymaps_2",label =fcnAddInfo("Mean Map",
+                                 checkboxInput("inp_prioritymaps_2",label =fcnAddInfo("Map of Mean Habitat Connect",
                                                                                       "A map of the mean of habitat connectivity across all parameter combinations."
                                                                                       ),
                                                                                       value = param_prioritymaps_default[[2]])
                           ),
                           column(3,
-                                 checkboxInput("inp_prioritymaps_3",label = fcnAddInfo("Difference Map",
-                                                                                       "A map of the difference in ranks between mean habitat connectivity and host density."
+                                 checkboxInput("inp_prioritymaps_3",label = fcnAddInfo("Map of Difference Habitat Connect",
+                                                                                       "A map of the difference in ranks between mean habitat connectivity and habitat density."
                                                                                        ),
                                                value = param_prioritymaps_default[[3]])
                           ),
                           column(3,
-                                 checkboxInput("inp_prioritymaps_4",label = fcnAddInfo("Variance Map",
+                                 checkboxInput("inp_prioritymaps_4",label = fcnAddInfo("Map of Variance Habitat Connect",
                                                                                        "A map of the variance of habitat connectivity across all parameter combinations."
                                                                                        ),
                                                value = param_prioritymaps_default[[4]])
-                          )
+                          ),
+                          uiOutput("uiodisablemean")
       ),
       shinydashboard::box(width = 12,collapsible = F,
                           column(1,offset =5,actionButton("inp_submit_all","Submit"))
@@ -217,7 +323,10 @@ app_server <- function(input, output, session) {
     )
 
   })
-
+  output$uiodisablemean <-renderUI({
+    shinyjs::disable("inp_prioritymaps_2")
+    div()
+  })
   volumes = c(home = "C:/Users/")
   observe({
     shinyFiles::shinyDirChoose(input, "inp_prioritymaps_1",
@@ -295,7 +404,7 @@ app_server <- function(input, output, session) {
     }else{
       default_global <- geohabnet::geoscale_param() #
       div(
-        numericInput("inp_geoscale_1","X min",default_global[1]),
+        numericInput("inp_geoscale_1","X Min",default_global[1]),
         numericInput("inp_geoscale_2","X Max",default_global[2]),
         numericInput("inp_geoscale_3","Y Min",default_global[3]),
         numericInput("inp_geoscale_4","Y Max",default_global[4])
@@ -388,7 +497,7 @@ app_server <- function(input, output, session) {
     #Host Considerations########
     #Host
     if(fcnValidate(input$inp_mofreda) && fcnValidate(input$inp_mapspam)){
-      val_list$Issue <- c(val_list$Issue,list("Host"="Please select one host"))
+      val_list$Issue <- c(val_list$Issue,list("Habitat Considerations"="Please select one habitat"))
     }else{
       if(!fcnValidate(input$inp_mofreda)){
         inp <- input$inp_mofreda
@@ -480,20 +589,22 @@ app_server <- function(input, output, session) {
     }
     def_yaml$default$`CCRI parameters`$NetworkMetrics$InversePowerLaw$metrics <- input$inp_ipl_dd
     def_yaml$default$`CCRI parameters`$NetworkMetrics$InversePowerLaw$weights <- inp
-
-    #Network Metrics Negative Exponential
-    inp <- NULL
-    if(fcnValidate(input$inp_ne_dd)){
-      val_list$Issue <- c(val_list$Issue,list("Network Metrics"="Incorrect Input"))
-    }
-    for(i in input$inp_ne_dd){
-      inp <- c(inp,input[[paste0("inp_ne_matrix_",i)]])
-    }
-    if(sum(inp)!=100){
-      val_list$Issue <- c(val_list$Issue,list("Network Metrics"="Incorrect Sum"))
-    }
-    def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$metrics <- input$inp_ne_dd
+    #Updated that same to same for negative exponential. (15th march)
+    def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$metrics <- input$inp_ipl_dd
     def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$weights <- inp
+    #Network Metrics Negative Exponential
+    # inp <- NULL
+    # if(fcnValidate(input$inp_ne_dd)){
+    #   val_list$Issue <- c(val_list$Issue,list("Network Metrics"="Incorrect Input"))
+    # }
+    # for(i in input$inp_ne_dd){
+    #   inp <- c(inp,input[[paste0("inp_ne_matrix_",i)]])
+    # }
+    # if(sum(inp)!=100){
+    #   val_list$Issue <- c(val_list$Issue,list("Network Metrics"="Incorrect Sum"))
+    # }
+    #def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$metrics <- input$inp_ne_dd
+    #def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$weights <- inp
 
     #Beta
     inp <- NULL
@@ -583,7 +694,7 @@ app_server <- function(input, output, session) {
   })
   output$uiomean <-renderUI({
     if(isolate(rv$mean)==T){
-      shinydashboard::box(width=6,h3("Mean Map"),
+      shinydashboard::box(width=6,h3("Map of Mean Habitat Connect"),
                           shiny::downloadButton('dwnmean',"Download"),
                           shiny::plotOutput("plotoutmean"))
     }else{
@@ -592,7 +703,7 @@ app_server <- function(input, output, session) {
   })
   output$uiodiff <-renderUI({
     if(isolate(rv$diff)==T){
-      shinydashboard::box(width=6,h3("Difference Map"),
+      shinydashboard::box(width=6,h3("Map of Difference Habitat Connect"),
                           shiny::downloadButton('dwndiff',"Download"),
                           shiny::plotOutput("plotoutdiff"))
     }else{
@@ -601,7 +712,7 @@ app_server <- function(input, output, session) {
   })
   output$uiovar <-renderUI({
     if(isolate(rv$var)==T){
-      shinydashboard::box(width=6,h3("Variance Map"),
+      shinydashboard::box(width=6,h3("Map of Variance Habitat Connect"),
                           shiny::downloadButton('dwnvar',"Download"),
                           shiny::plotOutput("plotoutvar"))
     }else{
@@ -656,13 +767,13 @@ app_server <- function(input, output, session) {
     }
   )
   output$dwndiff <- downloadHandler(
-    filename = function() { paste("mean_map", '.tif', sep='') },
+    filename = function() { paste("diff_map", '.tif', sep='') },
     content = function(file) {
       file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "diff"))),file)
     }
   )
   output$dwnvar <- downloadHandler(
-    filename = function() { paste("mean_map", '.tif', sep='') },
+    filename = function() { paste("variance_map", '.tif', sep='') },
     content = function(file) {
       file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "var"))),file)
     }
