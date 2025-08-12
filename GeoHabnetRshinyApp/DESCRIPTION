@@ -1,6 +1,6 @@
 Package: GeoHabnetRshinyApp
 Title: Cropland Connectivity Dashboard
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: person('Stavan', 'Shah', email = 'stavannikhi.shah@ufl.edu', role = c('cre', 'aut'))
 Description: PKG_DESC.
 License: What license is it under?
