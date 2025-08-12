@@ -8,6 +8,8 @@
 library(yaml)
 app_server <- function(input, output, session) {
 
+  options(shiny.maxRequestSize = 100*1024^2)  # 100 MB limit
+
   #UI###################
   # Your application server logic
   param_file_default <- geohabnet::get_parameters()
@@ -53,6 +55,12 @@ app_server <- function(input, output, session) {
 
   #Storing default priority map values AUTOMATED DOUBT
   param_prioritymaps_default <- param_file_default$default$`CCRI parameters`$PriorityMaps
+
+  #Crop Choices
+  global_crop_choices <- list(
+    choices = c("Mapspam","Cropgrid","Earthstat","Others"),
+    preprocess = c("Mapspam","Cropgrid") #Ordering Matters
+  )
 
 
   #Extracting CCRI parameters and their options
@@ -134,17 +142,24 @@ app_server <- function(input, output, session) {
                               )
                               #h4("Welcome to geohabnet Dashboard. Our tool empowers you to analyze the network and connectivity of croplands, crucial for understanding the potential spread of plant pathogens. While geographical connection is significant, numerous other factors influence spread and connectivity, such as crop type and various environmental parameters.")
                               ),
-          shinydashboard::box(width =4,style="text-align: center;",
-                              img(src = "www/customize.png",width=80),
-                              h4("Customizable Parameters: Adjust up to 10 parameters identified by Keshav et al. (2023) to tailor your analysis within the RShiny environment.")
-                              ),
-          shinydashboard::box(width =4,style="text-align: center;",
+           shinydashboard::box(
+             width = 4,
+             style = "text-align: center;",
+             img(src = "www/customize.png", width = 80),
+             h4(
+               tags$b("Customizable Parameters:"),
+               " Adjust up to 10 parameters identified by Keshav et al. (2023) to tailor your analysis within the RShiny environment."
+             )
+           ),
+          shinydashboard::box(width =4,
+                              style="text-align: center;",
                               img(src = "www/international.png",width=80),
-                              h4("Global Perspective: Leverage insights from Xing et al. (2020) to understand global cropland connectivity trends, all within the convenience of this dashboard")
+                              h4(tags$b("Global Perspective:"),
+                                 "Leverage insights from Xing et al. (2020) to understand global cropland connectivity trends, all within the convenience of this dashboard")
                               ),
           shinydashboard::box(width =4,style="text-align: center;",
                               img(src = "www/snap.png",width=60),
-                              h4("User-Friendly Interface: Inspired by Configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis process.")
+                              h4(tags$b("User-Friendly Interface:"),"Inspired by Configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis process.")
                               ),
           shinydashboard::box(width = 12,style="text-align: center;",
                               h3("Example output",style="text-align: center;"),
@@ -152,18 +167,27 @@ app_server <- function(input, output, session) {
           ),
           shinydashboard::box(width = 12,style="text-align: center;",
                               h3("Abstract"),
-                              h4("The network and connectivity of cropland can be used to analyse the potential spread of plant pathogen. While network plays a crucial role, there are several other factors that affects the spread and thus the connectivity. Although croplands may be geographically connected, the risk cannot be generalized as pathogen may not spread if it’s exclusive to specific crop. (Keshav et al. 2023) supports up to 10 parameters that has potential to impact risk and connectivity among croplands. The implementation is expanded upon (Xing et al. 2020), which discusses global cropland connectivity. This framework uses default values from the paper at the same time making them as parameters and eventually turning it into framework for the analysis of crops.
-
-Although this article is focused on usage, it is useful to know for interested developers that package design is inspired from widely used Configuration-based design in software development (Majors 2022), (Nash and DeMore 2009), and (Allaire 2023) provides a text based interface to control the parameters values for risk analysis in this context.
-
-Primary objective of this vignette is to help user in getting started, list capabilities and intuition behind them. It also describes underlying implementation at high level to support the intuition behind functions. Throughout the article, we will citing external sites and resources which is relevant to usage of this package.")
+                              h4("The geohabnet package is designed to perform a geographically or spatially explicit risk analysis of habitat connectivity. Xing et al (2021) [doi:10.1093/biosci/biaa067] proposed the concept of cropland connectivity as a risk factor for plant pathogen or pest invasions. As the functions in geohabnet were initially developed thinking on cropland connectivity, users are recommended to first be familiar with the concept by looking at the Xing et al paper. In a nutshell, a habitat connectivity analysis combines information from maps of host density, estimates the relative likelihood of pathogen movement between habitat locations in the area of interest, and applies network analysis to calculate the connectivity of habitat locations.
+    The functions of geohabnet are built to conduct a habitat connectivity analysis relying on geographic parameters (spatial resolution and spatial extent), dispersal parameters (in two commonly used dispersal kernels: inverse power law and negative exponential models), and network parameters (link weight thresholds and network metrics).
+    The functionality and main extensions provided by the functions in geohabnet to habitat connectivity analysis are
+    a) Capability to easily calculate the connectivity of locations in a landscape using a single function, such as sensitivity_analysis() or msean().
+    b) As backbone datasets, the geohabnet package supports the use of publicly available global datasets to calculate cropland density.
+    c) Because the geohabnet package allows R users to provide maps of host density (as originally in Xing et al (2021)), host landscape density (representing the geographic distribution of either crops or wild species), or habitat distribution (such as host landscape density adjusted by climate suitability) as inputs, we propose the term habitat connectivity.
+    d) The geohabnet package allows R users to customize parameter values in the habitat connectivity analysis, facilitating context-specific (pathogen- or pest-specific) analyses.
+    e) The geohabnet package allows users to automatically visualize maps of the habitat connectivity of locations resulting from a sensitivity analysis across all customized parameter combinations.
+    The primary functions are msean() and sensitivity analysis().
+    Most functions in geohabnet provide three main outcomes: i) A map of mean habitat connectivity across parameters selected by the user, ii) a map of variance of habitat connectivity across the selected parameters, and iii) a map of the difference between the ranks of habitat connectivity and habitat density.
+    Each function can be used to generate these maps as 'final' outcomes.
+    Each function can also provide intermediate outcomes, such as the adjacency matrices built to perform the analysis, which can be used in other network analysis.
+    Refer to article at https://garrettlab.github.io/HabitatConnectivity/articles/analysis.html to see examples of each function and how to access each of these outcome types.
+    To change parameter values, the file called parameters.yaml stores the parameters and their values, can be accessed using get_parameters() and set new parameter values with set_parameters().
+    Users can modify up to ten parameters.")
           )
 
         )
   })
 
   output$uio_sm_2_custinp <- renderUI({
-    #shinyjs::disable("inp_submit_all")
     fluidPage(
 
       #Host Considerations#########
@@ -171,21 +195,104 @@ Primary objective of this vignette is to help user in getting started, list capa
                           column(12,
                                  h5("geohabnet can provide analyses of habitat connectivity based on data you provide. It can also evaluate cropland connectivity analyses for crop-specific pathogens and pests based on Monfreda et al. (2008) and MapSPAM data sets. ")
                                  ),
-                          column(3,style="border-right: 1px solid lightgray;",
-                                 fileInput("inp_host_file","File (if uploading your own file with a map of habitat quality)")
+                          shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = div(icon(name = "info-circle", lib = "font-awesome")," Links & Instructions for downloading data*"),
+                             column(12,
+                                    h5("*Note that a valid input data for geohabnet is a raster layer of habitat availability (such as host availability), in which each grid cell has any values between zero and one. Users can use the publicly available data sources listed below to conduct the habitat connectivity analysis, but these raster layers may need to be transformed before uploading them in the 'Upload File' button.")
+                                    ),
+                             column(6,
+                                   textInput("inp_monfreda_link", "Monfreda",
+                                             value = "http://www.earthstat.org/harvested-area-yield-175-crops/",
+                                             width = "100%",
+                                             placeholder = "Link will appear here"
+                                   ) %>%
+                                     tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+
+                                   ),
+                              column(6,
+                                     textInput("inp_mapspam_link", "Mapspam",
+                                               value = "https://dataverse.harvard.edu/file.xhtml?fileId=10120889&version=3.0",
+                                               width = "100%",
+                                               placeholder = "Link will appear here"
+                                     ) %>%
+                                       tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+
+                              ),
+                            column(6,
+                                   textInput("inp_cropgrid_link", "Cropgrid",
+                                             value = "https://figshare.com/articles/dataset/CROPGRIDS/22491997/9",
+                                             width = "100%",
+                                             placeholder = "Link will appear here"
+                                   ) %>%
+                                     tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+
+                            ),
+                            column(12,
+                                   h5("1. If you are using data about the area fraction of a crop from the EARTHSAT dataset, you can directly upload that raster layer in this Shinny App.")
+                            ),
+                            column(12,
+                                   h5("2. If you are using the data layers of harvested area (in hectares) from CROPGRIDS, you will need to run the following code in R studio before uploading it in this Shinny App")
+                            ),
+                            column(12,
+                                   textAreaInput(
+                                     inputId = "cropgrid_calculation_output_1",
+                                     label = NULL,#"Copy and run the script below before uploading Cropgrid data",
+                                     value =
+                                       "
+                                        library(terra)
+                                        avocado_sp <- rast(\"CROPGRIDSv1.08_avocado.nc\")
+                                        cell.area <- (0.05 * 111111) * (0.05 * 111111) / 10000  # area in hectares
+                                        avocado_sp <- avocado_sp$harvarea / cell.area  # area in hectares
+                                        values(avocado_sp) <- ifelse(values(avocado_sp) > 0,values(avocado_sp), NaN)
+                                        writeRaster(avocado_sp, \"avocado_density.tif\", overwrite = TRUE)",
+                                     rows = 3,
+                                     width = "100%"
+                                   )
                           ),
-                          column(3,
-                                 selectInput("inp_mofreda",
-                                             label =fcnAddInfo("Monfreda et al. (2008) dataset","This dataset provides global maps of harvested area fraction for over 150 crops. Need to select at least one habitat"),
-                                             choices = c(param_hosts$options[[1]]$choices),
-                                             multiple = T)
-                                 ),
-                          column(3,
-                                 radioButtons("inp_mapspam_options",label = fcnAddInfo("MapSPAM or IFPRI dataset","This dataset provides global maps of harvested area fraction for 42 crops. Need to select at least one habitat"),
-                                              choices = c("Global 2010","Africa 2017"),inline = T),
-                                 selectInput("inp_mapspam",label = NULL,
-                                             choices = c(param_hosts$options[[2]]$choices),multiple = T)
-                                 ),
+                          column(12,
+                                 h5("3. If you are using the data layers of cropland area (in hectares) from MapSPAM, you will need to run the following code in R studio")
+                          ),
+                          column(12,
+                                 textAreaInput(
+                                   inputId = "cropgrid_calculation_output_2",
+                                   label = NULL,#"Copy and run the script below before uploading Cropgrid data",
+                                   value =
+                                     "
+                                      library(terra)
+                                      terra_obj <- rast(\"spam2020_v1r0_global_H_BANA_A.tif\")
+                                      cell.area <- (res(terra_obj)[1] * 111111) * (res(terra_obj)[2] * 111111) / 10000  # area in hectares
+                                      terra_sp <- terra_sp / cell.area  # area in hectares
+                                      writeRaster(terra_sp, \"terra_density.tif\", overwrite = TRUE)",
+                                   rows = 3,
+                                   width = "100%"
+                                 )
+                          ),
+                          column(12,
+                                 h5("4. If you are using your own dataset, please also make sure that you raster layer is in the standard coordinate reference system (i.e., EPSG:4326).")
+                          )
+                          ),
+                          shinydashboard::box(width = 9,collapsible = F,collapsed = F, title = div(icon(name = "info-circle", lib = "font-awesome"),"Upload your own file with a map of habitat quality"),
+                                      column(4,style="border-right: 1px solid lightgray;",
+                                             h5(fcnAddInfo("Type","Add Info here"),style="font-weight: bold"),
+                                             selectInput(inputId = "inp_select_file_type",NULL,choices = global_crop_choices$choices,selected = NULL,multiple = F),
+                                             div(
+                                               #style = "margin-top:-2rem",
+                                               checkboxInput("inp_check_preprocess_host_file",fcnAddInfo("Pre-process the Data","Works only for CROPGRIDS and MAPSPAM"),value=TRUE)
+                                             )
+                                      ),
+                                      column(8,
+                                             fileInput(
+                                               inputId = "inp_host_file",
+                                               label = "Upload File",
+                                               accept = c(
+                                                 ".tif", ".tiff",   # GeoTIFF
+                                                 ".img",            # ERDAS Imagine files
+                                                 ".nc",             # NetCDF
+                                                 ".grd", ".gri"     # Raster formats used by terra/raster
+                                               )
+                                             )#,
+
+                                      )
+                          ),
                           column(3,style="height:14rem;overflow-y:auto;",
                                  div(
                                    h5(fcnAddInfo("Habitat Density Threshold","Selections have to be unique and positive"),style="font-weight: bold;margin-right: 1rem;"),
@@ -219,8 +326,49 @@ Primary objective of this vignette is to help user in getting started, list capa
                                  ),
 
       ),
-      #Network#############
+      #Dispersal#############
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Dispersal Kernels",
+                          column(4,style="height:14rem;overflow-y:auto;",
+                                 div(
+                                   h5(fcnAddInfo("Link Weight Threshold","Inputs should be numeric, unique and positive."),style="font-weight: bold;margin-right: 1rem;"),
+                                   actionButton("inp_add_lt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
+                                   actionButton("inp_remove_lt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
+                                   style="display:inline-flex;"
+                                 ),
+                                 uiOutput("uio_add_lt")
+                          ),
+                          column(4,style="height:14rem;overflow-y:auto;",
+                                 h5(
+                                   fcnAddInfo(
+                                     "Dispersal Parameter Beta",
+                                     "Beta is a parameter used in the dispersal kernel based on the inverse power law model. The smaller the beta, the more likely a pathogen or pest move from one location to another."),
+                                   style="font-weight: bold"),
+                                 div(
+                                   actionButton("inp_add_beta",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
+                                   actionButton("inp_remove_beta",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
+                                   style="display:inline-flex;"
+                                 ),
+                                 uiOutput("uio_create_ipl_beta_input")
+                          ),
+                          column(4,style="height:14rem;overflow-y:auto;",
+                                 h5(
+                                   fcnAddInfo(
+                                     "Dispersal Parameter Gamma",
+                                     "Gamma is a parameter used in the dispersal kernel based on the negative exponential model. The smaller the gamma, the more likely a pathogen or pest move from one location to another."
+                                   )
+                                   ,style="font-weight: bold"),
+                                 div(
+                                   actionButton("inp_add_gamma",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
+                                   actionButton("inp_remove_gamma",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
+                                   style="display:inline-flex;"
+                                 ),
+                                 uiOutput("uio_create_ne_gamma_input")
+                          )
+
+
+      ),
+      ####Network
+      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Network Metrics",
                           column(12,
                                  column(3,
                                         h5(fcnAddInfo("Metrics","Select at least one metric Sum of metric(s) should be 100"),style="font-weight: bold"),
@@ -231,64 +379,7 @@ Primary objective of this vignette is to help user in getting started, list capa
                                  )
                                  )
       ),
-      shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Network Metrics",
-             # column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
-             #        column(3,
-             #               h5(fcnAddInfo("Inverse Power Law Model","Select at least one metric Sum of metric(s) should be 100"),style="font-weight: bold"),
-             #               selectInput(inputId = "inp_ipl_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$InversePowerLaw$metrics),multiple = T)
-             #        ),
-             #        column(9,
-             #               uiOutput("uio_create_ipl_input")
-             #        )
-             #        ),
-             # column(12,style="border-bottom: 1px solid lightgray;margin-bottom: 1rem;",
-             #        column(3,
-             #               h5(fcnAddInfo("Negative Exponential Model","Select at least one method. Sum of method(s) should be 100"),style="font-weight: bold"),
-             #               selectInput(inputId = "inp_ne_dd",NULL,choices = param_metrics,selected = tolower(param_metrics_default$NegativeExponential$metrics),multiple = T)
-             #        ),
-             #        column(9,
-             #               uiOutput("uio_create_ne_input")
-             #        )
-             #        ),
-             column(4,style="height:14rem;overflow-y:auto;",
-                    div(
-                      h5(fcnAddInfo("Link Weight Threshold","Inputs should be numeric, unique and positive."),style="font-weight: bold;margin-right: 1rem;"),
-                      actionButton("inp_add_lt",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
-                      actionButton("inp_remove_lt",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
-                      style="display:inline-flex;"
-                    ),
-                    uiOutput("uio_add_lt")
-             ),
-             column(4,style="height:14rem;overflow-y:auto;",
-                    h5(
-                      fcnAddInfo(
-                        "Dispersal Parameter Beta",
-                        "Beta is a parameter used in the dispersal kernel based on the inverse power law model. The smaller the beta, the more likely a pathogen or pest move from one location to another."),
-                      style="font-weight: bold"),
-                    div(
-                      actionButton("inp_add_beta",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
-                      actionButton("inp_remove_beta",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
-                      style="display:inline-flex;"
-                    ),
-                    uiOutput("uio_create_ipl_beta_input")
-             ),
-             column(4,style="height:14rem;overflow-y:auto;",
-                    h5(
-                      fcnAddInfo(
-                        "Dispersal Parameter Gamma",
-                        "Gamma is a parameter used in the dispersal kernel based on the negative exponential model. The smaller the gamma, the more likely a pathogen or pest move from one location to another."
-                        )
-                      ,style="font-weight: bold"),
-                    div(
-                      actionButton("inp_add_gamma",NULL,icon = icon("plus", class = NULL, lib = "font-awesome")),
-                      actionButton("inp_remove_gamma",NULL,icon = icon("minus", class = NULL, lib = "font-awesome")),
-                      style="display:inline-flex;"
-                    ),
-                    uiOutput("uio_create_ne_gamma_input")
-             )
 
-
-      ),
       #Output##################
       shinydashboard::box(width = 12,collapsible = T,collapsed = T, title = "Output Selection",
                           #h5("Priority Maps",style="font-weight: bold"),
@@ -325,6 +416,17 @@ Primary objective of this vignette is to help user in getting started, list capa
 
     )
 
+  })
+  observe({
+    if(!fcnValidate(input$inp_select_file_type)){
+      if (input$inp_select_file_type %in% global_crop_choices$preprocess) {
+        shinyjs::show("inp_check_preprocess_host_file")  # Show it first
+        shinyjs::disable("inp_check_preprocess_host_file")
+      } else {
+        shinyjs::hide("inp_check_preprocess_host_file")
+
+      }
+    }
   })
   output$uiodisablemean <-renderUI({
     shinyjs::disable("inp_prioritymaps_2")
@@ -373,6 +475,17 @@ Primary objective of this vignette is to help user in getting started, list capa
     isolate(global_btn_cnt$cnt_dt <- global_btn_cnt$cnt_dt - 1)
   })
   output$uio_add_dt <- renderUI({
+    shinyjs::disable("inp_mapspam")
+    shinyjs::disable("inp_mofreda")
+    shinyjs::disable("inp_monfreda_link")
+    shinyjs::disable("inp_mapspam_link")
+    shinyjs::disable("inp_cropgrid_link")
+    shinyjs::disable("cropgrid_calculation_output_1")
+    shinyjs::disable("cropgrid_calculation_output_2")
+
+
+
+
     # -1 for the first time run only
     if(global_btn_cnt$cnt_dt== -1){
       global_btn_cnt$cnt_dt <- length(param_dt_values)
@@ -488,7 +601,7 @@ Primary objective of this vignette is to help user in getting started, list capa
   observeEvent(input$inp_submit_all,{
     #sendSweetAlert(session = session,title = "Inputs submitted. Updating Parameters",type = "success")
     if("degree" %in% input$inp_ipl_dd || "degree" %in% input$inp_ne_dd){
-      shinybusy::notify_info("We are still updating'degree' functionality. Please remove it from selection",position = "center-bottom",timeout = 6000)#,config_notify(width='100rem')
+      shinybusy::notify_info("We are still updating 'degree' functionality. Please remove it from selection",position = "center-bottom",timeout = 6000)#,config_notify(width='100rem')
       return()
     }
     geohabnet::reset_params()
@@ -500,21 +613,68 @@ Primary objective of this vignette is to help user in getting started, list capa
     #Host Considerations########
     #Host
     if(fcnValidate(input$inp_mofreda) && fcnValidate(input$inp_mapspam)){
-      val_list$Issue <- c(val_list$Issue,list("Habitat Considerations"="Please select one habitat"))
+      #sS Temp Commenting for time being
+      #val_list$Issue <- c(val_list$Issue,list("Habitat Considerations"="Please select one habitat"))
     }else{
       if(!fcnValidate(input$inp_mofreda)){
         inp <- input$inp_mofreda
-        def_yaml$default$`CCRI parameters`$Hosts$monfreda <- inp
+        def_yaml$default$`CCRI parameters`$Host$monfreda <- inp
 
       }
       if(!fcnValidate(input$inp_mapspam)){
         inp <- input$inp_mapspam
         if(input$inp_mapspam_options=="Global 2010"){
-          def_yaml$default$`CCRI parameters`$Hosts$mapspam2010 <- inp
+          def_yaml$default$`CCRI parameters`$Host$mapspam2010 <- inp
         }else{
-          def_yaml$default$`CCRI parameters`$Hosts$mapspam2017Africa <- inp
+          def_yaml$default$`CCRI parameters`$Host$mapspam2017Africa <- inp
         }
       }
+    }
+    inp <-NULL
+    #SS - May 20, File Input
+    #SS - July 18th Updating This to compulsory preprocess
+    if(!fcnValidate(input$inp_host_file)){
+      temp_loc <- input$inp_host_file$datapath
+      if (input$inp_select_file_type == global_crop_choices$preprocess[1] && global_crop_choices$preprocess[1] == "Mapspam") {
+        tryCatch({
+
+          inp <- terra::rast(temp_loc)
+          cell.area <- (terra::res(inp)[1] * 111111) * (terra::res(inp)[2] * 111111) / 10000  # area in hectares
+          inp <- inp / cell.area
+          values(inp) <- ifelse(values(inp) > 0,
+                                       values(inp), NaN)
+          temp_loc <- file.path(tempdir(), "temp_write.tif")
+          terra::writeRaster(inp, temp_loc, overwrite = TRUE)
+
+        }, error = function(e) {
+          print(e)
+          val_list$Issue <<- c(val_list$Issue, list(
+            "Habitat Considerations" = "Error in the automated pre-processing of uploaded file. Please refer to the example script and upload a processed file."
+          ))
+        })
+      }
+      else if (input$inp_select_file_type == global_crop_choices$preprocess[2] && global_crop_choices$preprocess[2] == "Cropgrid"){
+        tryCatch({
+
+          inp <- terra::rast(temp_loc)
+          cell.area <- (0.05 * 111111) * (0.05 * 111111) / 10000  # area in hectares
+          inp <- inp$harvarea / cell.area
+          values(inp) <- ifelse(values(inp) > 0,
+                                values(inp), NaN)
+          temp_loc <- file.path(tempdir(), "temp_write.tif")
+          terra::writeRaster(inp, temp_loc, overwrite = TRUE)
+
+        }, error = function(e) {
+          print(e)
+          val_list$Issue <<- c(val_list$Issue, list(
+            "Habitat Considerations" = "Error in the automated pre-processing of uploaded file. Please refer to the example script and upload a processed file."
+          ))
+        })
+      }
+
+      #Common for both if and else
+      def_yaml$default$`CCRI parameters`$Host <-  temp_loc
+      temp_loc <- NULL
     }
 
     #2 Density Threshold#
