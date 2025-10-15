@@ -133,7 +133,10 @@ app_server <- function(input, output, session) {
                               div(class = "container",
                                   div(class = "text",
                                       h2("Welcome"),
-                                      p("Welcome to the Geohabnetify app! This app expedites the functionality of geohabnet through an easy-to-use interactive dashboard. The geohabnet package helps users to conduct habitat connectivity analyses in a reproducible fashion, which is key to understanding the potential spread of plant pathogens, plant pests, pollinators, or endangered species. ")
+                                      p(
+                                        "Welcome to the Geohabnetify app! This app expedites the functionality of geohabnet through an easy-to-use interactive dashboard. The geohabnet package helps users to conduct habitat connectivity analyses in a reproducible fashion, which is key to understanding the potential spread of plant pathogens, plant pests, pollinators, or endangered species. These tools are part of the",
+                                        tags$a("R2M Plant Health Toolbox: Rapid risk assessment for mitigation of crop pathogens & pests.", href = "https://www.garrettlab.com/r2m/", target = "_blank")
+                                        )
                                   ),
                                   div(class = "image",
                                       img(src = "www/farmland.jpg", alt = "Your Image"),
@@ -142,9 +145,10 @@ app_server <- function(input, output, session) {
                               )
                               #h4("Welcome to geohabnet Dashboard. Our tool empowers you to analyze the network and connectivity of croplands, crucial for understanding the potential spread of plant pathogens. While geographical connection is significant, numerous other factors influence spread and connectivity, such as crop type and various environmental parameters.")
                               ),
-           shinydashboard::box(
+         h3("Key Features",style="text-align: center;"),
+         shinydashboard::box(
                              width = 4,
-                             height = 245,
+                             height = 300,
                              style = "text-align: center;",
                              img(src = "www/customize.png", width = 80),
                              h4(
@@ -153,7 +157,7 @@ app_server <- function(input, output, session) {
                                )
            ),
           shinydashboard::box(width =4,
-                              height = 245,
+                              height = 300,
                               style="text-align: center;",
                               img(src = "www/international.png",width=80),
                               h4(tags$b("Global Perspective:"),
@@ -161,7 +165,7 @@ app_server <- function(input, output, session) {
                                  )
                               ),
           shinydashboard::box(width =4,style="text-align: center;",
-                              height = 245,
+                              height = 300,
                               img(src = "www/snap.png",width=60),
                               h4(tags$b("User-Friendly Interface:"),
                                  "Inspired by configuration-based design in software development (Majors 2022), our RShiny interface offers intuitive control over parameter values, streamlining your analysis of habitat connectivity"
@@ -172,15 +176,25 @@ app_server <- function(input, output, session) {
                               img(src = "www/map.jpg", width = 700)
           ),
           shinydashboard::box(width = 12,style="text-align: center;",
-                              h3("Abstract"),
+                              h3("geohabnet: Geographical Risk Analysis Based on Habitat Connectivity",style="text-align: center;"),
                               h4(
-                                "The geohabnet package is designed to perform a geographically or spatially explicit risk analysis of habitat connectivity. Xing et al (2021) [doi:10.1093/biosci/biaa067] proposed the concept of cropland connectivity as a risk factor for plant pathogen or pest invasions. As the functions in geohabnet were initially developed thinking on cropland connectivity, users are recommended to first be familiar with the concept by looking at the Xing et al paper. In a nutshell, a habitat connectivity analysis combines information from maps of habitat availability (e.g., host density), estimates the relative likelihood of pest movement between habitat locations in the area of interest, and applies network analysis to calculate the connectivity of habitat locations."
+                                p(
+                                  "The geohabnet package is designed to perform a geographically or spatially explicit risk analysis of habitat connectivity. Xing et al (2021) [doi:10.1093/biosci/biaa067] proposed the concept of cropland connectivity as a risk factor for plant pathogen or pest invasions. As the functions in geohabnet were initially developed thinking on cropland connectivity, users are recommended to first be familiar with the concept by looking at the Xing et al paper. In a nutshell, a habitat connectivity analysis combines information from maps of habitat availability (e.g., host density), estimates the relative likelihood of pest movement between habitat locations in the area of interest, and applies network analysis to calculate the connectivity of habitat locations."
+                                )
                               ),
                               h4(
-                                "The functions of geohabnet are built to conduct a habitat connectivity analysis relying on geographic parameters (spatial resolution and spatial extent), dispersal parameters (in two commonly used dispersal kernels: inverse power law and negative exponential models), and network parameters (link weight thresholds and network metrics)."
+                                p(
+                                  "The functions of geohabnet are built to conduct a habitat connectivity analysis relying on geographic parameters (spatial resolution and spatial extent), dispersal parameters (in two commonly used dispersal kernels: inverse power law and negative exponential models), and network parameters (link weight thresholds and network metrics)."
+                                )
                               ),
                               h4(
-                                "More information about the stable version of geohabnet can be found at CRAN: Package geohabnet. More information about the development version of geohabnet can be found at GitHub - GarrettLab/HabitatConnectivity: geohabnet R package. You are welcome to contribute to speed up and broaden the functionality of this package."
+                                p(
+                                  "More information about the stable version of geohabnet can be found at ",
+                                  tags$a("CRAN: Package geohabnet", href = "https://cran.r-project.org/web/packages/geohabnet/index.html", target = "_blank"),
+                                  ". More information about the development version of geohabnet can be found at ",
+                                  tags$a("GitHub - GarrettLab/HabitatConnectivity: geohabnet R package", href = "https://github.com/GarrettLab/HabitatConnectivity", target = "_blank"),
+                                  ". You are welcome to contribute to speed up and broaden the functionality of this package."
+                                )
                               )
           )
 
