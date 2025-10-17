@@ -133,7 +133,7 @@ app_server <- function(input, output, session) {
                               div(class = "container",
                                   div(class = "text",
                                       h2("Welcome"),
-                                      p(
+                                      h4(
                                         "Welcome to the Geohabnetify app! This app expedites the functionality of geohabnet through an easy-to-use interactive dashboard. The geohabnet package helps users to conduct habitat connectivity analyses in a reproducible fashion, which is key to understanding the potential spread of plant pathogens, plant pests, pollinators, or endangered species. These tools are part of the",
                                         tags$a("R2M Plant Health Toolbox: Rapid risk assessment for mitigation of crop pathogens & pests.", href = "https://www.garrettlab.com/r2m/", target = "_blank")
                                         )
@@ -175,11 +175,13 @@ app_server <- function(input, output, session) {
                               h3("Example Output of the Host Landscape Connectivity for the Tomato Leafminer",style="text-align: center;"),
                               img(src = "www/map.jpg", width = 700)
           ),
-          shinydashboard::box(width = 12,style="text-align: center;",
+          shinydashboard::box(width = 12,#style="text-align: center;",
                               h3("geohabnet: Geographical Risk Analysis Based on Habitat Connectivity",style="text-align: center;"),
                               h4(
                                 p(
-                                  "The geohabnet package is designed to perform a geographically or spatially explicit risk analysis of habitat connectivity. Xing et al (2021) [doi:10.1093/biosci/biaa067] proposed the concept of cropland connectivity as a risk factor for plant pathogen or pest invasions. As the functions in geohabnet were initially developed thinking on cropland connectivity, users are recommended to first be familiar with the concept by looking at the Xing et al paper. In a nutshell, a habitat connectivity analysis combines information from maps of habitat availability (e.g., host density), estimates the relative likelihood of pest movement between habitat locations in the area of interest, and applies network analysis to calculate the connectivity of habitat locations."
+                                  "The geohabnet package is designed to perform a geographically or spatially explicit risk analysis of habitat connectivity.",
+                                  tags$a("Xing et al (2021)",href="https://academic.oup.com/bioscience/article/70/9/744/5875255",target="_blank"),
+                                  "proposed the concept of cropland connectivity as a risk factor for plant pathogen or pest invasions. As the functions in geohabnet were initially developed thinking on cropland connectivity, users are recommended to first be familiar with the concept by looking at the Xing et al paper. In a nutshell, a habitat connectivity analysis combines information from maps of habitat availability (e.g., host density), estimates the relative likelihood of pest movement between habitat locations in the area of interest, and applies network analysis to calculate the connectivity of habitat locations."
                                 )
                               ),
                               h4(
@@ -196,7 +198,49 @@ app_server <- function(input, output, session) {
                                   ". You are welcome to contribute to speed up and broaden the functionality of this package."
                                 )
                               )
-          )
+          ),
+         fluidRow(
+         tags$footer(
+                 style = "
+          color: #333;
+          padding: 15px 0;
+          font-size: 14px;
+          width: 100%;
+          text-align: center;
+          border-top: 1px solid #ddd;
+          position: relative;
+          bottom: 0;
+        ",
+
+                 fluidRow(
+                   column(
+                     12,
+                     tags$div(
+                       style = "margin-bottom: 5px;",
+                       tags$b("Stavan Shah"), " - Developer ",
+                       tags$a("stavannikhi.shah@ufl.edu",
+                              href = "mailto:stavannikhi.shah@ufl.edu",
+                              style = "color:#0073e6; text-decoration:none;"),
+                       tags$br(),
+                       tags$b("Aaron Plex"), " - Maintainer ",
+                       tags$a("plexaaron@ufl.edu",
+                              href = "mailto:plexaaron@ufl.edu",
+                              style = "color:#0073e6; text-decoration:none;"),
+                       tags$br(),
+                       tags$b("Karen Garrett"), " - Lead Instructor ",
+                       tags$a("karengarrett@ufl.edu",
+                              href = "mailto:karengarrett@ufl.edu",
+                              style = "color:#0073e6; text-decoration:none;")
+                     ),
+                     tags$div(
+                       style = "margin-top: 8px; color: #555;",
+                       HTML("&copy; University of Florida - Copyright holder, funder")
+                     )
+                   )
+                 )
+         ) #footer ends
+         )
+
 
         )
   })
@@ -213,33 +257,35 @@ app_server <- function(input, output, session) {
                              column(12,
                                     h5("*Note that a valid input data for geohabnet is a raster layer of habitat availability (such as host availability), in which each grid cell has any values between zero and one. Users can use the publicly available data sources listed below to conduct the habitat connectivity analysis, but these raster layers may need to be transformed before uploading them in the 'Upload File' button.")
                                     ),
-                             column(6,
-                                   textInput("inp_monfreda_link", "Monfreda",
-                                             value = "http://www.earthstat.org/harvested-area-yield-175-crops/",
-                                             width = "100%",
-                                             placeholder = "Link will appear here"
-                                   ) %>%
-                                     tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+                             column(12,
+                               tags$div(
+                                 style = "display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;",
 
-                                   ),
-                              column(6,
-                                     textInput("inp_mapspam_link", "Mapspam",
-                                               value = "https://dataverse.harvard.edu/file.xhtml?fileId=10120889&version=3.0",
-                                               width = "100%",
-                                               placeholder = "Link will appear here"
-                                     ) %>%
-                                       tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+                                 tags$div(
+                                   tags$i(class = "fa fa-database", style = "margin-right: 6px; color: #4a4a4a;"),
+                                   tags$a("Monfreda",
+                                          href = "http://www.earthstat.org/harvested-area-yield-175-crops/",
+                                          target = "_blank",
+                                          style = "text-decoration: none; color: #0073e6; font-weight: 500;")
+                                 ),
 
-                              ),
-                            column(6,
-                                   textInput("inp_cropgrid_link", "Cropgrid",
-                                             value = "https://figshare.com/articles/dataset/CROPGRIDS/22491997/9",
-                                             width = "100%",
-                                             placeholder = "Link will appear here"
-                                   ) %>%
-                                     tagAppendAttributes(readonly = "readonly", style = "background-color: #f5f5f5; cursor: text;")
+                                 tags$div(
+                                   tags$i(class = "fa fa-database", style = "margin-right: 6px; color: #4a4a4a;"),
+                                   tags$a("Mapspam",
+                                          href = "https://dataverse.harvard.edu/file.xhtml?fileId=10120889&version=3.0",
+                                          target = "_blank",
+                                          style = "text-decoration: none; color: #0073e6; font-weight: 500;")
+                                 ),
 
-                            ),
+                                 tags$div(
+                                   tags$i(class = "fa fa-database", style = "margin-right: 6px; color: #4a4a4a;"),
+                                   tags$a("Cropgrid",
+                                          href = "https://figshare.com/articles/dataset/CROPGRIDS/22491997/9",
+                                          target = "_blank",
+                                          style = "text-decoration: none; color: #0073e6; font-weight: 500;")
+                                 )
+                               )
+                             ),
                             column(12,
                                    h5("1. If you are using data about the area fraction of a crop from the EARTHSAT dataset, you can directly upload that raster layer in this Shinny App.")
                             ),
