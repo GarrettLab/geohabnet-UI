@@ -6,12 +6,11 @@ Description: PKG_DESC.
 License: What license is it under?
 Imports: 
     config (>= 0.3.2),
-    geohabnet,
+    geohabnet (>= 2.2),
     ggplot2,
     golem (>= 0.4.1),
     plotly,
     png,
-    raster,
     rnaturalearthdata,
     shiny (>= 1.7.1),
     shinyBS,

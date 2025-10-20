@@ -492,7 +492,8 @@ app_server <- function(input, output, session) {
     shinyjs::disable("inp_prioritymaps_2")
     div()
   })
-  volumes = c(home = "C:/Users/")
+  volumes = c(Home = fs::path_home(), "C:" = "C:/", "D:" = "D:/")
+  #shinyFiles::shinyDirChoose(input, "inp_prioritymaps_1", roots = volumes, session = session)
   observe({
     shinyFiles::shinyDirChoose(input, "inp_prioritymaps_1",
                    roots = volumes)
@@ -944,39 +945,8 @@ app_server <- function(input, output, session) {
   })
 
   output$plotoutmean <- renderPlot({
-    #browser()
     rv$plotmean<-geohabnet:::.plotmap(rv$mainop@me_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
-    # rv$plotmean = ggplotly(rv$plotmean) %>%
-    #   config(
-    #     modeBarButtonsToRemove = list(
-    #       "zoom2d",
-    #       "pan2d",
-    #       "zoomIn2d",
-    #       "zoomOut2d",
-    #       "autoScale2d",
-    #       "resetScale2d",
-    #       "hoverClosestCartesian",
-    #       "hoverCompareCartesian",
-    #       "sendDataToCloud",
-    #       "toggleHover",
-    #       "resetViews",
-    #       "toggleSpikelines",
-    #       "resetViewMapbox"
-    #     ),
-    #     displaylogo = FALSE
-    #   )
-    # rv$plotmean
-    #ggsave("plot.pdf", rv$plotmean)
-    #rv$plotmean
-  })
-  # output$dwnmean <- downloadHandler(
-  #   filename = function() {
-  #     "plot.pdf"
-  #   },
-  #   content = function(file) {
-  #     file.copy("plot.pdf", file, overwrite=TRUE)
-  #   }
-  # )
+    })
   output$plotoutdiff <- shiny::renderPlot({
     rv$plotdiff<-geohabnet:::.plotmap(rv$mainop@diff_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
   })
