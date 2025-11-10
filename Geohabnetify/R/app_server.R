@@ -199,7 +199,7 @@ app_server <- function(input, output, session) {
                                 )
                               )
           ),
-         fluidRow(
+         column(12,
          tags$footer(
                  style = "
           color: #333;
@@ -694,6 +694,7 @@ app_server <- function(input, output, session) {
     inp <-NULL
     #SS - May 20, File Input
     #SS - July 18th Updating This to compulsory preprocess
+    message("----- [LOG] validate -----")
     if(!fcnValidate(input$inp_host_file)){
       temp_loc <- input$inp_host_file$datapath
       if (input$inp_select_file_type == global_crop_choices$preprocess[1] && global_crop_choices$preprocess[1] == "Mapspam") {
@@ -702,8 +703,8 @@ app_server <- function(input, output, session) {
           inp <- terra::rast(temp_loc)
           cell.area <- (terra::res(inp)[1] * 111111) * (terra::res(inp)[2] * 111111) / 10000  # area in hectares
           inp <- inp / cell.area
-          values(inp) <- ifelse(values(inp) > 0,
-                                       values(inp), NaN)
+          terra::values(inp) <- ifelse(terra::values(inp) > 0, terra::values(inp), NaN)
+          #inp <- ifelse(values(inp) > 0, values(inp), NaN)
           temp_loc <- file.path(tempdir(), "temp_write.tif")
           terra::writeRaster(inp, temp_loc, overwrite = TRUE)
 
@@ -720,8 +721,8 @@ app_server <- function(input, output, session) {
           inp <- terra::rast(temp_loc)
           cell.area <- (0.05 * 111111) * (0.05 * 111111) / 10000  # area in hectares
           inp <- inp$harvarea / cell.area
-          values(inp) <- ifelse(values(inp) > 0,
-                                values(inp), NaN)
+          terra::values(inp) <- ifelse(terra::values(inp) > 0,
+                                       terra::values(inp), NaN)
           temp_loc <- file.path(tempdir(), "temp_write.tif")
           terra::writeRaster(inp, temp_loc, overwrite = TRUE)
 
@@ -737,7 +738,7 @@ app_server <- function(input, output, session) {
       def_yaml$default$`CCRI parameters`$Host <-  temp_loc
       temp_loc <- NULL
     }
-
+    message("----- [LOG] density threshold -----")
     #2 Density Threshold#
     inp <- NULL
     for(i in 1:global_btn_cnt$cnt_dt){
@@ -748,7 +749,7 @@ app_server <- function(input, output, session) {
     }else{
       def_yaml$default$`CCRI parameters`$HostDensityThreshold <- inp
     }
-
+    message("----- [LOG] slink threshold -----")
     #3 Link Threshold#
     inp <- NULL
     for(i in 1:global_btn_cnt$cnt_lt){
@@ -760,7 +761,7 @@ app_server <- function(input, output, session) {
       def_yaml$default$`CCRI parameters`$LinkThreshold <- inp
     }
 
-
+    message("----- [LOG] aggregation strat -----")
     #4 Aggregation Strategy
     if(fcnValidate(input$inp_agg_strat)){
       val_list$Issue <- c(val_list$Issue,list("Aggregation Strategy"="Incorrect Input"))
@@ -770,7 +771,7 @@ app_server <- function(input, output, session) {
       def_yaml$default$`CCRI parameters`$AggregationStrategy <- inp
     }
 
-
+    message("----- [LOG] distance strat -----")
     #5 Distance Strategy
     if(fcnValidate(input$inp_distance_strat)){
       val_list$Issue <- c(val_list$Issue,list("Distance Strategy"="Incorrect Input"))
@@ -782,7 +783,7 @@ app_server <- function(input, output, session) {
       def_yaml$default$`CCRI parameters`$DistanceStrategy <- inp
     }
 
-
+    message("----- [LOG] resolution -----")
     #6 Resolution
     if(fcnValidate(input$inp_resolution)){
       val_list$Issue <- c(val_list$Issue,list("Resolution"="Incorrect Input"))
@@ -792,14 +793,14 @@ app_server <- function(input, output, session) {
       inp <- input$inp_resolution
       def_yaml$default$`CCRI parameters`$Resolution <- inp
     }
-
+    message("----- [LOG] global extent -----")
     #7 Global Extent
     inp <- input$inp_globalextent
     if(!inp){
       def_yaml$default$`CCRI parameters`$GeoExtent$global <- inp
       def_yaml$default$`CCRI parameters`$GeoExtent$customExt <-c(input$inp_geoscale_1,input$inp_geoscale_2,input$inp_geoscale_3,input$inp_geoscale_4)
     }
-
+    message("----- [LOG]  network metrics-----")
     #Network Metrics Inverse Power
     inp <- NULL
     if(fcnValidate(input$inp_ipl_dd)){
@@ -831,6 +832,7 @@ app_server <- function(input, output, session) {
     #def_yaml$default$`CCRI parameters`$NetworkMetrics$NegativeExponential$weights <- inp
 
     #Beta
+    message("----- [LOG]  beta-----")
     inp <- NULL
     for(i in 1:global_btn_cnt$cnt_beta){
       inp <- c(inp,input[[paste0("inp_ipl_beta_",i)]])
@@ -846,6 +848,7 @@ app_server <- function(input, output, session) {
     }
 
     #Gamma
+    message("----- [LOG] gamma -----")
     inp <- NULL
     for(i in 1:global_btn_cnt$cnt_gamma){
       inp <- c(inp,input[[paste0("inp_ne_gamma_",i)]])
@@ -864,6 +867,7 @@ app_server <- function(input, output, session) {
     # if(fcnValidate(input$inp_prioritymaps_2) && fcnValidate(input$inp_prioritymaps_3) && fcnValidate(input$inp_prioritymaps_4)){
     #   val_list$Issue <- c(val_list$Issue,list("Output Selection"="Incorrect Selection"))
     # }
+    message("----- [LOG]  output-----")
     if(fcnValidate(input$inp_prioritymaps_2)){
       val_list$Issue <- c(val_list$Issue,list("Output Selection"="Please select Mean Map"))
     }
@@ -882,7 +886,7 @@ app_server <- function(input, output, session) {
       ))
       return()
     }
-
+    message("----- [LOG] validation complete -----")
     shinybusy::notify_success("Inputs have been validated. Performing Sensitivity Analysis. This may take some time...",position = "center-bottom",timeout = 6000)#,config_notify(width='100rem')
     yaml::write_yaml(def_yaml,param_file)
     geohabnet::set_parameters(param_file)
@@ -890,7 +894,9 @@ app_server <- function(input, output, session) {
     #sendSweetAlert(session = session,title = "Parameters Set. Generating Outputs",type = "success")
     shinybusy::show_modal_spinner() # show the modal window
     #shinybusy::play_gif()
+    message("----- [LOG] sensitivity_analysis() -----")
     rv$mainop <- geohabnet::sensitivity_analysis()
+    message("----- [LOG] analysis complete. generating outputs -----")
     rv$mean <- input$inp_prioritymaps_2
     rv$diff <-input$inp_prioritymaps_3
     rv$var <-input$inp_prioritymaps_4
@@ -943,15 +949,16 @@ app_server <- function(input, output, session) {
       div()
     }
   })
-
+  #palette1 <- viridisLite::viridis(n=100, option = "inferno", direction = -1, begin = 0.05, end = 0.95)
+  dark.palette<-viridis::viridis_pal(option = "inferno", begin = 0.05, end = 0.95)
   output$plotoutmean <- renderPlot({
-    rv$plotmean<-geohabnet:::.plotmap(rv$mainop@me_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
+    rv$plotmean<-geohabnet:::.plotmap(rv$mainop@me_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = dark.palette(100),zlim = c(0, 0))
     })
   output$plotoutdiff <- shiny::renderPlot({
     rv$plotdiff<-geohabnet:::.plotmap(rv$mainop@diff_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
   })
   output$plotoutvar <- shiny::renderPlot({
-    rv$plotvar<-geohabnet:::.plotmap(rv$mainop@var_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
+    rv$plotvar<-geohabnet:::.plotmap(rv$mainop@var_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = dark.palette(100),zlim = c(0, 0))
   })
   output$dwnmean <- downloadHandler(
     filename = function() { paste("mean_map", '.tif', sep='') },

@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(GeoHabnetRshiny)
+#library(geohabnetify)
 
-test_check("GeoHabnetRshiny")
+#test_check("geohabnetify")

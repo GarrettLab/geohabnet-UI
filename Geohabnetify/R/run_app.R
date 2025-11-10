@@ -14,6 +14,7 @@ run_app <- function(
   uiPattern = "/",
   ...
 ) {
+  options(shiny.loadTimeout = 60000)
   with_golem_options(
     app = shinyApp(
       ui = app_ui,
