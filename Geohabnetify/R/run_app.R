@@ -7,6 +7,8 @@
 #' @export
 #' @importFrom shiny shinyApp
 #' @importFrom golem with_golem_options
+options(shiny.loadTimeout = 60000)
+options(shiny.maxRequestSize = 100*1024^2)  # 100 MB limit
 run_app <- function(
   onStart = NULL,
   options = list(),
@@ -14,7 +16,7 @@ run_app <- function(
   uiPattern = "/",
   ...
 ) {
-  options(shiny.loadTimeout = 60000)
+
   with_golem_options(
     app = shinyApp(
       ui = app_ui,

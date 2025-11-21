@@ -6,13 +6,15 @@
 #' @noRd
 
 library(yaml)
+options(shiny.loadTimeout = 60000)
+options(shiny.maxRequestSize = 100*1024^2)  # 100 MB limit
 app_server <- function(input, output, session) {
 
-  options(shiny.maxRequestSize = 100*1024^2)  # 100 MB limit
 
   #UI###################
   # Your application server logic
   param_file_default <- geohabnet::get_parameters()
+  print(param_file_default)
   param_file_default <- yaml::read_yaml(param_file_default)
   #write_yaml(param_file_default,"data/default_param.yml")
 
@@ -78,9 +80,22 @@ app_server <- function(input, output, session) {
   #     )
   #   )
   # })
-  fcnAddInfo <- function(label,info){
-    return(shinyBS::tipify(el = div(label,icon(name = "info-circle", lib = "font-awesome")), title = info))
+  #fcnAddInfo <- function(label,info){
+  #  return(shinyBS::tipify(el = div(label,icon(name = "info-circle", lib = "font-awesome")), title = info))
+  #}
+
+  fcnAddInfo <- function(label, info) {
+    tags$span(
+      HTML(as.character(label)),
+      tags$i(
+        class = "fa fa-info-circle",
+        `data-toggle` = "tooltip",
+        title = as.character(info),
+        style = "margin-left: 6px; cursor: help;"
+      )
+    )
   }
+
 
   output$uio_sm_1_dashboard <- renderUI({
     fluidPage(style="background-color:white",
@@ -671,6 +686,8 @@ app_server <- function(input, output, session) {
     val_list <- list("Pass"=T,
                      "Issue" = list()
                      )
+    message("LOG -> location of param",param_file)
+    #message("LOG -> paramfile", def_yaml)
     #Host Considerations########
     #Host
     if(fcnValidate(input$inp_mofreda) && fcnValidate(input$inp_mapspam)){
@@ -695,7 +712,12 @@ app_server <- function(input, output, session) {
     #SS - May 20, File Input
     #SS - July 18th Updating This to compulsory preprocess
     message("----- [LOG] validate -----")
-    if(!fcnValidate(input$inp_host_file)){
+    inp_temp_var <<- NULL
+    message("LOG value of ",input$inp_host_file)
+    message("LOG value of ",input$inp_host_file$datapath)
+    if(FALSE){#temp fcnValidate(input$inp_host_file$datapath)
+      val_list$Issue <- c(val_list$Issue,list("Habitat Considerations"="Please upload a valid file."))
+    }else{
       temp_loc <- input$inp_host_file$datapath
       if (input$inp_select_file_type == global_crop_choices$preprocess[1] && global_crop_choices$preprocess[1] == "Mapspam") {
         tryCatch({
@@ -707,6 +729,7 @@ app_server <- function(input, output, session) {
           #inp <- ifelse(values(inp) > 0, values(inp), NaN)
           temp_loc <- file.path(tempdir(), "temp_write.tif")
           terra::writeRaster(inp, temp_loc, overwrite = TRUE)
+          inp_temp_var <<- inp
 
         }, error = function(e) {
           print(e)
@@ -724,6 +747,7 @@ app_server <- function(input, output, session) {
           terra::values(inp) <- ifelse(terra::values(inp) > 0,
                                        terra::values(inp), NaN)
           temp_loc <- file.path(tempdir(), "temp_write.tif")
+          inp_temp_var <<- inp
           terra::writeRaster(inp, temp_loc, overwrite = TRUE)
 
         }, error = function(e) {
@@ -733,11 +757,11 @@ app_server <- function(input, output, session) {
           ))
         })
       }
-
       #Common for both if and else
       def_yaml$default$`CCRI parameters`$Host <-  temp_loc
       temp_loc <- NULL
     }
+
     message("----- [LOG] density threshold -----")
     #2 Density Threshold#
     inp <- NULL
@@ -888,15 +912,37 @@ app_server <- function(input, output, session) {
     }
     message("----- [LOG] validation complete -----")
     shinybusy::notify_success("Inputs have been validated. Performing Sensitivity Analysis. This may take some time...",position = "center-bottom",timeout = 6000)#,config_notify(width='100rem')
-    yaml::write_yaml(def_yaml,param_file)
-    geohabnet::set_parameters(param_file)
+
+
+    #changing this
+    #old
+    ##yaml::write_yaml(def_yaml,param_file)
+    ##geohabnet::set_parameters(param_file)
+    #new
+
+    print(inp_temp_var)
+    # Create a temporary file to store the updated YAML
+    tmp_yaml <- file.path(tempdir(), "user_param.yml")
+    # Write the updated YAML to the temp file
+    yaml::write_yaml(def_yaml, tmp_yaml)
+    # Set parameters using the temp YAML file
+    geohabnet::set_parameters(tmp_yaml)
+
+
     #Sys.sleep(5)
     #sendSweetAlert(session = session,title = "Parameters Set. Generating Outputs",type = "success")
     shinybusy::show_modal_spinner() # show the modal window
     #shinybusy::play_gif()
+
+    message("LOG -> updated parameters", def_yaml)
     message("----- [LOG] sensitivity_analysis() -----")
+    #temp fix
+    #browser()
+    #rv$mainop <-geohabnet::msean(rast=inp_temp_var,agg_methods="sum",res=24,inv_pl = geohabnet::inv_powerlaw(NULL, betas = c(0.5, 1, 1.5), mets = c("NODE_STRENGTH"), we = c(100), linkcutoff = -1),neg_exp = geohabnet::neg_expo(NULL, gammas = c(0.05, 1, 0.2, 0.3), mets = c("NODE_STRENGTH"), we = c(100), linkcutoff = -1))
     rv$mainop <- geohabnet::sensitivity_analysis()
     message("----- [LOG] analysis complete. generating outputs -----")
+
+
     rv$mean <- input$inp_prioritymaps_2
     rv$diff <-input$inp_prioritymaps_3
     rv$var <-input$inp_prioritymaps_4

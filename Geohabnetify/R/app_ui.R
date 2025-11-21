@@ -63,6 +63,15 @@ golem_add_external_resources <- function() {
     favicon(),
     golem::activate_js(),
     shinyjs::useShinyjs(),
+    tags$script(HTML("
+      $(function () {
+        $('[data-toggle=\"tooltip\"]').tooltip({
+          container: 'body',
+          html: true
+        });
+      });
+    ")),
+    #shinyBS::useShinyBS(),
     #shinybusy::add_busy_gif(src = "https://jeroen.github.io/images/banana.gif", height = 70, width = 70),
     shinybusy::use_busy_spinner(spin = "semipolar",position = "full-page"),
     bundle_resources(
