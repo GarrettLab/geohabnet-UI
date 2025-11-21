@@ -1006,22 +1006,37 @@ app_server <- function(input, output, session) {
   output$plotoutvar <- shiny::renderPlot({
     rv$plotvar<-geohabnet:::.plotmap(rv$mainop@var_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = dark.palette(100),zlim = c(0, 0))
   })
-  output$dwnmean <- downloadHandler(
-    filename = function() { paste("mean_map", '.tif', sep='') },
-    content = function(file) {
-      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "mean"))),file)
-    }
-  )
-  output$dwndiff <- downloadHandler(
-    filename = function() { paste("diff_map", '.tif', sep='') },
-    content = function(file) {
-      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "diff"))),file)
-    }
-  )
-  output$dwnvar <- downloadHandler(
-    filename = function() { paste("variance_map", '.tif', sep='') },
-    content = function(file) {
-      file.copy(file.path(paste0(tempdir(),"\\plots\\",list.files(paste0(tempdir(),"\\plots"),pattern = "var"))),file)
-    }
-  )
+
+
+  #######Download
+
+  # Robust helper function to create download handlers
+  create_download <- function(output, name, pattern) {
+    output[[name]] <- downloadHandler(
+      filename = function() { paste0(name, ".tif") },
+      content = function(file) {
+        plots_dir <- file.path(tempdir(), "plots")
+
+        # List files matching the pattern
+        files <- list.files(plots_dir, pattern = pattern, full.names = TRUE)
+
+        if (length(files) == 0) {
+          showNotification(paste("No files found for pattern:", pattern), type = "error")
+          return(NULL)
+        }
+
+        # Pick the most recently modified file
+        latest_file <- files[which.max(file.info(files)$mtime)]
+
+        # Copy to download
+        file.copy(latest_file, file)
+      }
+    )
+  }
+
+  # Create download handlers for your app
+  create_download(output, "dwnmean", "mean")
+  create_download(output, "dwndiff", "diff")
+  create_download(output, "dwnvar", "var")
+
 }
