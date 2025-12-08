@@ -1036,24 +1036,25 @@ app_server <- function(input, output, session) {
   output$plotoutvar <- renderPlot({
     req(rv$mainop)
 
-    # Force a headless-safe device
-    grDevices::png(
-      filename = tempfile(fileext = ".png"),
-      width = 1200,
-      height = 700,
-      res = 120
-    )
+    message("DEBUG: entering plotoutvar, class = ", class(rv$mainop@var_rast))
 
-    on.exit(grDevices::dev.off(), add = TRUE)
+    tryCatch({
 
-    geohabnet:::.plotmap(
-      rv$mainop@var_rast,
-      geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
-      col_pal = dark.palette(100),
-      zlim = get_zlim(rv$mainop@var_rast)
-    )
-  })
+      geohabnet:::.plotmap(
+        rv$mainop@var_rast,
+        geoscale = geohabnet::geoscale_param(),
+        isglobal = TRUE,
+        col_pal = dark.palette(100),
+        zlim = get_zlim(rv$mainop@var_rast)
+      )
+
+      message("DEBUG: .plotmap finished successfully for var_rast")
+
+    }, error = function(e) {
+      message("ERROR in plotoutvar(): ", conditionMessage(e))
+    })
+
+  }, height = 600, res = 96)
 
 
 
