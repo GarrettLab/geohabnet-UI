@@ -1009,13 +1009,13 @@ app_server <- function(input, output, session) {
   }
 
 
-  plotmap_shiny <- function(rast, geoscale, isglobal, label, col_pal, zlim) {
+  plotmap_app <- function (rast, geoscale, isglobal, label, col_pal, zlim) {
 
     oldpar <- graphics::par(no.readonly = TRUE)
     on.exit(graphics::par(oldpar), add = TRUE)
 
     # Base grid
-    gplot(
+    geohabnet::gplot(
       geohabnet:::.cal_mgb(geoscale, isglobal),
       col = "grey85",
       xaxt = "n",
@@ -1028,7 +1028,7 @@ app_server <- function(input, output, session) {
     # Raster layer
     if (isglobal) {
       gs <- geohabnet:::.global_ext()
-      gplot(
+      geohabnet::gplot(
         rast,
         col = col_pal,
         xaxt = "n",
@@ -1044,7 +1044,7 @@ app_server <- function(input, output, session) {
         )
       )
     } else {
-      gplot(
+      geohabnet::gplot(
         rast,
         col = col_pal,
         xaxt = "n",
@@ -1056,7 +1056,7 @@ app_server <- function(input, output, session) {
       )
     }
 
-    # World borders
+    # Country borders
     world <- rnaturalearth::ne_countries(
       scale = "medium",
       returnclass = "sf"
@@ -1074,8 +1074,7 @@ app_server <- function(input, output, session) {
 
   output$plotoutmean <- renderPlot({
     req(rv$mainop)
-
-    plotmap_shiny(
+    plotmap_app(
       rast     = rv$mainop@me_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
@@ -1084,11 +1083,11 @@ app_server <- function(input, output, session) {
       zlim     = get_zlim(rv$mainop@me_rast)
     )
 
-  }, height = 600, res = 96)
+  })
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
-    geohabnet:::.plotmap(
+    plotmap_app(
       rv$mainop@diff_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
@@ -1099,26 +1098,14 @@ app_server <- function(input, output, session) {
 
   output$plotoutvar <- renderPlot({
     req(rv$mainop)
-
-    message("DEBUG: entering plotoutvar, class = ", class(rv$mainop@var_rast))
-
-    tryCatch({
-
-      geohabnet:::.plotmap(
-        rv$mainop@var_rast,
-        geoscale = geohabnet::geoscale_param(),
-        isglobal = TRUE,
-        col_pal = dark.palette(100),
-        zlim = get_zlim(rv$mainop@var_rast)
-      )
-
-      message("DEBUG: .plotmap finished successfully for var_rast")
-
-    }, error = function(e) {
-      message("ERROR in plotoutvar(): ", conditionMessage(e))
-    })
-
-  }, height = 600, res = 96)
+    plotmap_app(
+      rv$mainop@var_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = dark.palette(100),
+      zlim = get_zlim(rv$mainop@var_rast)
+    )
+  })
 
 
 
