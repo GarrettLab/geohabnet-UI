@@ -1008,19 +1008,83 @@ app_server <- function(input, output, session) {
     c(z[1], z[2])
   }
 
+
+  plotmap_shiny <- function(rast, geoscale, isglobal, label, col_pal, zlim) {
+
+    oldpar <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(oldpar), add = TRUE)
+
+    # Base grid
+    gplot(
+      geohabnet:::.cal_mgb(geoscale, isglobal),
+      col = "grey85",
+      xaxt = "n",
+      yaxt = "n",
+      legend = FALSE,
+      main = label,
+      cex.main = 0.9
+    )
+
+    # Raster layer
+    if (isglobal) {
+      gs <- geohabnet:::.global_ext()
+      gplot(
+        rast,
+        col = col_pal,
+        xaxt = "n",
+        yaxt = "n",
+        zlim = zlim,
+        add = TRUE,
+        lwd = 0.7,
+        legend = TRUE,
+        plg = list(
+          loc = "bottom",
+          ext = c(gs[1] + 30, gs[2] - 30, gs[3] - 30, gs[3] - 20),
+          horizontal = TRUE
+        )
+      )
+    } else {
+      gplot(
+        rast,
+        col = col_pal,
+        xaxt = "n",
+        yaxt = "n",
+        zlim = zlim,
+        add = TRUE,
+        lwd = 0.7,
+        legend = TRUE
+      )
+    }
+
+    # World borders
+    world <- rnaturalearth::ne_countries(
+      scale = "medium",
+      returnclass = "sf"
+    )
+    world <- world[world$continent != "Antarctica", "geometry"]
+    world <- terra::vect(world)
+
+    if (!isglobal) {
+      world <- terra::crop(world, terra::ext(rast))
+    }
+
+    terra::plot(world, col = NA, border = "grey50", add = TRUE)
+  }
+
+
   output$plotoutmean <- renderPlot({
-    req(rv$mainop@me_rast)
-    message("PLOTTING mean raster")
-    print(rv$mainop@me_rast)
-    plot<-geohabnet:::.plotmap(
-      rv$mainop@me_rast,
+    req(rv$mainop)
+
+    plotmap_shiny(
+      rast     = rv$mainop@me_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
-      col_pal = dark.palette(100),
-      zlim = c(0, 0)
+      label    = "Mean Habitat Connectivity",
+      col_pal  = dark.palette(100),
+      zlim     = get_zlim(rv$mainop@me_rast)
     )
-    plot
-  })
+
+  }, height = 600, res = 96)
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
