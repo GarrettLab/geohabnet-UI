@@ -1009,19 +1009,18 @@ app_server <- function(input, output, session) {
   }
 
   output$plotoutmean <- renderPlot({
-    req(rv$mainop)
-    message("PLOTTING mean raster (terra::plot)")
-    r <- rv$mainop@me_rast
-
-    # simple, direct raster plot
-    terra::plot(
-      r,
-      col   = dark.palette(100),
-      main  = "Mean Habitat Connectivity",
-      axes  = FALSE,
-      box   = FALSE
+    req(rv$mainop@me_rast)
+    message("PLOTTING mean raster")
+    print(rv$mainop@me_rast)
+    plot<-geohabnet:::.plotmap(
+      rv$mainop@me_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = dark.palette(100),
+      zlim = c(0, 0)
     )
-  }, height = 600, res = 96)
+    plot
+  })
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
@@ -1035,7 +1034,18 @@ app_server <- function(input, output, session) {
   })
 
   output$plotoutvar <- renderPlot({
-    req(rv$mainop@var_rast)
+    req(rv$mainop)
+
+    # Force a headless-safe device
+    grDevices::png(
+      filename = tempfile(fileext = ".png"),
+      width = 1200,
+      height = 700,
+      res = 120
+    )
+
+    on.exit(grDevices::dev.off(), add = TRUE)
+
     geohabnet:::.plotmap(
       rv$mainop@var_rast,
       geoscale = geohabnet::geoscale_param(),
@@ -1044,6 +1054,7 @@ app_server <- function(input, output, session) {
       zlim = get_zlim(rv$mainop@var_rast)
     )
   })
+
 
 
 
