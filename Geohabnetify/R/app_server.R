@@ -1009,18 +1009,19 @@ app_server <- function(input, output, session) {
   }
 
   output$plotoutmean <- renderPlot({
-    req(rv$mainop@me_rast)
-    message("PLOTTING mean raster")
-    print(rv$mainop@me_rast)
-    plot<-geohabnet:::.plotmap(
-      rv$mainop@me_rast,
-      geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
-      col_pal = dark.palette(100),
-      zlim = get_zlim(rv$mainop@me_rast)
+    req(rv$mainop)
+    message("PLOTTING mean raster (terra::plot)")
+    r <- rv$mainop@me_rast
+
+    # simple, direct raster plot
+    terra::plot(
+      r,
+      col   = dark.palette(100),
+      main  = "Mean Habitat Connectivity",
+      axes  = FALSE,
+      box   = FALSE
     )
-    plot
-  })
+  }, height = 600, res = 96)
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
