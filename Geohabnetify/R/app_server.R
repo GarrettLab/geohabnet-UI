@@ -1009,18 +1009,25 @@ app_server <- function(input, output, session) {
   }
 
   output$plotoutmean <- renderPlot({
-    req(rv$mainop@me_rast)
+    req(rv$mainop)
+
     message("PLOTTING mean raster")
-    print(rv$mainop@me_rast)
-    par(mar = c(4, 4, 2, 2))   # IMPORTANT in headless systems
-    geohabnet:::.plotmap(
-      rv$mainop@me_rast,
-      geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
-      col_pal = dark.palette(100),
-      zlim = get_zlim(rv$mainop@me_rast)
-    )
-  })
+
+    # Start capture
+    p <- NULL
+    p <- grDevices::recordPlot({
+      geohabnet:::.plotmap(
+        rv$mainop@me_rast,
+        geoscale = geohabnet::geoscale_param(),
+        isglobal = TRUE,
+        col_pal = dark.palette(100)
+      )
+    })
+
+    replayPlot(p)
+
+  }, height = 600, res = 96)
+
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
