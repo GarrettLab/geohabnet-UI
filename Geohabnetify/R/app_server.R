@@ -507,7 +507,12 @@ app_server <- function(input, output, session) {
     shinyjs::disable("inp_prioritymaps_2")
     div()
   })
-  volumes = c(Home = fs::path_home(), "C:" = "C:/", "D:" = "D:/")
+  #volumes = c(Home = fs::path_home(), "C:" = "C:/", "D:" = "D:/")
+  volumes <- c(
+    Home = fs::path_home(),
+    Temp = tempdir()
+  )
+
   #shinyFiles::shinyDirChoose(input, "inp_prioritymaps_1", roots = volumes, session = session)
   observe({
     shinyFiles::shinyDirChoose(input, "inp_prioritymaps_1",
@@ -942,7 +947,7 @@ app_server <- function(input, output, session) {
     rv$mainop <- geohabnet::sensitivity_analysis()
     message("----- [LOG] analysis complete. generating outputs -----")
 
-
+    message("LOG -> MAP OUTPUT(s)", input$inp_prioritymaps_2)
     rv$mean <- input$inp_prioritymaps_2
     rv$diff <-input$inp_prioritymaps_3
     rv$var <-input$inp_prioritymaps_4
@@ -997,15 +1002,45 @@ app_server <- function(input, output, session) {
   })
   #palette1 <- viridisLite::viridis(n=100, option = "inferno", direction = -1, begin = 0.05, end = 0.95)
   dark.palette<-viridis::viridis_pal(option = "inferno", begin = 0.05, end = 0.95)
+
+  get_zlim <- function(r) {
+    z <- terra::minmax(r)
+    c(z[1], z[2])
+  }
+
   output$plotoutmean <- renderPlot({
-    rv$plotmean<-geohabnet:::.plotmap(rv$mainop@me_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = dark.palette(100),zlim = c(0, 0))
-    })
-  output$plotoutdiff <- shiny::renderPlot({
-    rv$plotdiff<-geohabnet:::.plotmap(rv$mainop@diff_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = geohabnet:::.get_palette_for_diffmap(),zlim = c(0, 0))
+    req(rv$mainop@me_rast)
+    rv$plotmean <- geohabnet:::.plotmap(
+      rv$mainop@me_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = dark.palette(100),
+      zlim = get_zlim(rv$mainop@me_rast)
+    )
   })
-  output$plotoutvar <- shiny::renderPlot({
-    rv$plotvar<-geohabnet:::.plotmap(rv$mainop@var_rast,geoscale = geohabnet::geoscale_param(),isglobal = T,col_pal = dark.palette(100),zlim = c(0, 0))
+
+  output$plotoutdiff <- renderPlot({
+    req(rv$mainop@diff_rast)
+    rv$plotdiff <- geohabnet:::.plotmap(
+      rv$mainop@diff_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = geohabnet:::.get_palette_for_diffmap(),
+      zlim = get_zlim(rv$mainop@diff_rast)
+    )
   })
+
+  output$plotoutvar <- renderPlot({
+    req(rv$mainop@var_rast)
+    rv$plotvar <- geohabnet:::.plotmap(
+      rv$mainop@var_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = dark.palette(100),
+      zlim = get_zlim(rv$mainop@var_rast)
+    )
+  })
+
 
 
   #######Download
