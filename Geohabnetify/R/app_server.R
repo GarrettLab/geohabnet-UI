@@ -1010,7 +1010,10 @@ app_server <- function(input, output, session) {
 
   output$plotoutmean <- renderPlot({
     req(rv$mainop@me_rast)
-    rv$plotmean <- geohabnet:::.plotmap(
+    message("PLOTTING mean raster")
+    print(rv$mainop@me_rast)
+    par(mar = c(4, 4, 2, 2))   # IMPORTANT in headless systems
+    geohabnet:::.plotmap(
       rv$mainop@me_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
@@ -1021,7 +1024,7 @@ app_server <- function(input, output, session) {
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
-    rv$plotdiff <- geohabnet:::.plotmap(
+    geohabnet:::.plotmap(
       rv$mainop@diff_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
@@ -1032,7 +1035,7 @@ app_server <- function(input, output, session) {
 
   output$plotoutvar <- renderPlot({
     req(rv$mainop@var_rast)
-    rv$plotvar <- geohabnet:::.plotmap(
+    geohabnet:::.plotmap(
       rv$mainop@var_rast,
       geoscale = geohabnet::geoscale_param(),
       isglobal = TRUE,
