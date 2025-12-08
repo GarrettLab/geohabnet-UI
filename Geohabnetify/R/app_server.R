@@ -1009,25 +1009,18 @@ app_server <- function(input, output, session) {
   }
 
   output$plotoutmean <- renderPlot({
-    req(rv$mainop)
-
+    req(rv$mainop@me_rast)
     message("PLOTTING mean raster")
-
-    # Start capture
-    p <- NULL
-    p <- grDevices::recordPlot({
-      geohabnet:::.plotmap(
-        rv$mainop@me_rast,
-        geoscale = geohabnet::geoscale_param(),
-        isglobal = TRUE,
-        col_pal = dark.palette(100)
-      )
-    })
-
-    replayPlot(p)
-
-  }, height = 600, res = 96)
-
+    print(rv$mainop@me_rast)
+    plot<-geohabnet:::.plotmap(
+      rv$mainop@me_rast,
+      geoscale = geohabnet::geoscale_param(),
+      isglobal = TRUE,
+      col_pal = dark.palette(100),
+      zlim = get_zlim(rv$mainop@me_rast)
+    )
+    plot
+  })
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
