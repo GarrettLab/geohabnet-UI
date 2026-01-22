@@ -9,6 +9,8 @@ library(yaml)
 options(shiny.loadTimeout = 60000)
 options(shiny.maxRequestSize = 100*1024^2)  # 100 MB limit
 app_server <- function(input, output, session) {
+  message("SERVER STARTED")
+  session$onFlushed(function() message("UI FLUSHED"), once = TRUE)
 
 
   #UI###################
@@ -215,45 +217,70 @@ app_server <- function(input, output, session) {
                               )
           ),
          column(12,
-         tags$footer(
-                 style = "
-          color: #333;
-          padding: 15px 0;
-          font-size: 14px;
-          width: 100%;
-          text-align: center;
-          border-top: 1px solid #ddd;
-          position: relative;
-          bottom: 0;
-        ",
+                tags$footer(
+                  style = "
+    background-color: #0021A5;        /* UF Blue */
+    color: #ffffff;
+    padding: 20px 0;
+    font-size: 14px;
+    width: 100%;
+    text-align: center;
+    border-top: 5px solid #FA4616;     /* UF Orange */
+    position: relative;
+    bottom: 0;
+  ",
 
-                 fluidRow(
-                   column(
-                     12,
-                     tags$div(
-                       style = "margin-bottom: 5px;",
-                       tags$b("Stavan Shah"), " - Developer ",
-                       tags$a("stavannikhi.shah@ufl.edu",
-                              href = "mailto:stavannikhi.shah@ufl.edu",
-                              style = "color:#0073e6; text-decoration:none;"),
-                       tags$br(),
-                       tags$b("Aaron Plex"), " - Maintainer ",
-                       tags$a("plexaaron@ufl.edu",
-                              href = "mailto:plexaaron@ufl.edu",
-                              style = "color:#0073e6; text-decoration:none;"),
-                       tags$br(),
-                       tags$b("Karen Garrett"), " - Lead Instructor ",
-                       tags$a("karengarrett@ufl.edu",
-                              href = "mailto:karengarrett@ufl.edu",
-                              style = "color:#0073e6; text-decoration:none;")
-                     ),
-                     tags$div(
-                       style = "margin-top: 8px; color: #555;",
-                       HTML("&copy; University of Florida - Copyright holder, funder")
-                     )
-                   )
-                 )
-         ) #footer ends
+                  fluidRow(
+                    column(
+                      12,
+                      #img(src = "www/customize.png", width = 80)
+                      # UF Logo
+                      img(
+                        src = "www/IFAS-CORE.jpg",
+                        height = "50px",
+                        style = "margin-bottom: 10px;"
+                      ),
+
+                      # Contributors
+                      tags$div(
+                        style = "margin-bottom: 8px;",
+                        tags$b("Stavan Shah"), " – Developer ",
+                        tags$a(
+                          "stavannikhi.shah@ufl.edu",
+                          href = "mailto:stavannikhi.shah@ufl.edu",
+                          style = "color:#FA4616; text-decoration:none;"
+                        ),
+                        tags$br(),
+
+                        tags$b("Aaron Plex"), " – Maintainer ",
+                        tags$a(
+                          "plexaaron@ufl.edu",
+                          href = "mailto:plexaaron@ufl.edu",
+                          style = "color:#FA4616; text-decoration:none;"
+                        ),
+                        tags$br(),
+
+                        tags$b("Karen Garrett"), " – Lead Instructor ",
+                        tags$a(
+                          "karengarrett@ufl.edu",
+                          href = "mailto:karengarrett@ufl.edu",
+                          style = "color:#FA4616; text-decoration:none;"
+                        ),
+                        tags$br(),
+                        tags$b("Affliation"), ":",
+                        "University of Florida, ",
+                        "Institute of Food and Agricultural Sciences, ",
+                        "Department of Plant Pathalogy"
+                      ),
+
+                      # Copyright
+                      tags$div(
+                        style = "margin-top: 10px; font-size: 13px; color: #EDEDED;",
+                        HTML("&copy; University of Florida — Copyright holder, funder")
+                      )
+                    )
+                  )
+                )#footer ends
          )
 
 
@@ -1074,10 +1101,14 @@ app_server <- function(input, output, session) {
 
   output$plotoutmean <- renderPlot({
     req(rv$mainop)
+    map_global <- TRUE
+    if(!is.null(isolate(input$inp_globalextent))){
+      map_global <-input$inp_globalextent
+    }
     plotmap_app(
       rast     = rv$mainop@me_rast,
       geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
+      isglobal = map_global,
       label    = "Mean Habitat Connectivity",
       col_pal  = dark.palette(100),
       zlim     = get_zlim(rv$mainop@me_rast)
@@ -1087,10 +1118,14 @@ app_server <- function(input, output, session) {
 
   output$plotoutdiff <- renderPlot({
     req(rv$mainop@diff_rast)
+    map_global <- TRUE
+    if(!is.null(isolate(input$inp_globalextent))){
+      map_global <-input$inp_globalextent
+    }
     plotmap_app(
       rv$mainop@diff_rast,
       geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
+      isglobal = map_global,
       col_pal = geohabnet:::.get_palette_for_diffmap(),
       zlim = get_zlim(rv$mainop@diff_rast)
     )
@@ -1098,10 +1133,14 @@ app_server <- function(input, output, session) {
 
   output$plotoutvar <- renderPlot({
     req(rv$mainop)
+    map_global <- TRUE
+    if(!is.null(isolate(input$inp_globalextent))){
+      map_global <-input$inp_globalextent
+    }
     plotmap_app(
       rv$mainop@var_rast,
       geoscale = geohabnet::geoscale_param(),
-      isglobal = TRUE,
+      isglobal = map_global,
       col_pal = dark.palette(100),
       zlim = get_zlim(rv$mainop@var_rast)
     )

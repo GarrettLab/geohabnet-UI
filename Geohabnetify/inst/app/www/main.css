@@ -1,3 +1,7 @@
+.content{
+  padding: 0.2rem;
+}
+
 .box {
     position: relative;
     border-radius: 3px;
@@ -7,3 +11,119 @@
     width: 100%;
     box-shadow: 1px 1px 1px 1px rgba(0,0,0,.1);
 }
+
+/* UF Gator Colors */
+/* Orange: #FA4616 */
+/* Blue:   #0021A5 */
+
+/* Header */
+  .skin-blue .main-header .logo,
+  .skin-blue .main-header .navbar {
+    background-color: #0021A5 !important;
+    color: #ffffff !important;
+  }
+
+/* ================================
+   UF GATOR – TABSETPANEL ONLY
+   ================================ */
+
+/* Tab bar background */
+.nav-tabs {
+  background-color: #0021A5;
+  border-bottom: 4px solid #FA4616;
+}
+
+/* Individual tab */
+.nav-tabs > li > a {
+  color: #ffffff !important;
+  font-weight: 600;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/* Hover state */
+.nav-tabs > li > a:hover {
+  background-color: rgba(250, 70, 22, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* Active tab */
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:focus,
+.nav-tabs > li.active > a:hover {
+  background-color: #FA4616 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Tab content container */
+.tab-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 0 0 6px 6px;
+}
+
+
+  /* Sidebar */
+  .skin-blue .main-sidebar {
+    background-color: #0021A5 !important;
+  }
+
+  /* Sidebar links */
+  .skin-blue .sidebar-menu > li > a {
+    color: #ffffff !important;
+  }
+
+  /* Active menu item */
+  .skin-blue .sidebar-menu > li.active > a {
+    background-color: #FA4616 !important;
+    color: #ffffff !important;
+    border-left: 4px solid #ffffff;
+  }
+
+  /* Hover menu item */
+  .skin-blue .sidebar-menu > li > a:hover {
+    background-color: #FA4616 !important;
+    color: #ffffff !important;
+  }
+
+  /* Sub-menu background */
+  .skin-blue .treeview-menu {
+    background-color: #001B88 !important;
+  }
+
+  /* Badges */
+  .label,
+  .badge {
+    background-color: #FA4616 !important;
+    color: #ffffff !important;
+  }
+
+  /* Primary buttons */
+  .btn-primary {
+    background-color: #0021A5 !important;
+    border-color: #0021A5 !important;
+  }
+
+  .btn-primary:hover {
+    background-color: #FA4616 !important;
+    border-color: #FA4616 !important;
+  }
+
+  /* Box headers */
+  .box.box-solid.box-primary > .box-header {
+    background-color: #0021A5 !important;
+    color: #ffffff !important;
+  }
+
+  /* Links */
+  a {
+    color: #0021A5;
+  }
+
+  a:hover {
+    color: #FA4616;
+  }
+
+
